@@ -88,11 +88,11 @@ if (${CMAKE_GENERATOR} STREQUAL "Xcode")
 else()
     # public headers
     foreach (LIB ${FFMPEG_LIBS})
-        install(DIRECTORY prebuilts/include/lib${LIB} DESTINATION include FILES_MATCHING PATTERN "*.h")
+        install(DIRECTORY prebuilts/include/lib${LIB} DESTINATION include/FFmpeg FILES_MATCHING PATTERN "*.h")
     endforeach()
 
-    install(FILES FFmpeg.h DESTINATION include)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h DESTINATION include)
+    install(FILES FFmpeg.h DESTINATION include/FFmpeg)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h DESTINATION include/FFmpeg)
 endif()
 
 install (TARGETS ${PROJECT_NAME}
