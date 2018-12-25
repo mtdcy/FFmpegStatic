@@ -13,3 +13,9 @@ This project includes:
 * FFmpeg.framework for macOS [DONE]
 * FFmpeg.framework for iOS
 * libFFmpeg.so for Android 
+
+
+## Notes
+
+- using stub loader instead of --whole-archive, @see stub.c
+- always build shared library even we only need the static one, so we can check library dependency on shared library using commands like 'otool -L path_to_shared_library'
