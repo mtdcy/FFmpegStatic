@@ -17,5 +17,7 @@ This project includes:
 
 ## Notes
 
-- using stub loader instead of --whole-archive, @see stub.c
-- always build shared library even we only need the static one, so we can check library dependency on shared library using commands like 'otool -L path_to_shared_library'
+- using stub loader instead of --whole-archive, @see stub.c.
+- always build shared library even we only need the static one, so we can check library dependency on shared library using commands like 'otool -L path_to_shared_library'.
+- we don't like GPL, it is not commercial friendly. so don't --enable-gpl if you don't like GPL either.
+- 
