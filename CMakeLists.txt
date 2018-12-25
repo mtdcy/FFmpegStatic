@@ -59,7 +59,7 @@ list(APPEND FFMPEG_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h)
 add_library(${PROJECT_NAME} SHARED stub.c ${FFMPEG_HEADERS})
 
 # include and links
-include_directories(${PROJECT_NAME} prebuilts/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/prebuilts/include)
 foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS})
     target_link_libraries(${PROJECT_NAME} ${LIB})
 endforeach()
