@@ -17,12 +17,15 @@ void ffmpeg_avutil_stub_load() {
 #ifdef FFMPEG_HAS_avcodec
 void ffmpeg_avcodec_stub_load() {
     (void)avcodec_alloc_context3(NULL);
+    (void)avcodec_open2(NULL, NULL, NULL);
+    (void)avcodec_close(NULL);
 }
 #endif
 
 #ifdef FFMPEG_HAS_avformat
 void ffmpeg_avformat_stub_load() {
     (void)avformat_open_input(NULL, NULL, NULL, NULL);
+    (void)avformat_close_input(NULL);
 }
 #endif
 
@@ -43,5 +46,11 @@ void ffmpeg_swscale_stub_load() {
     (void)sws_getContext(0, 0, AV_PIX_FMT_NONE,
                          0, 0, AV_PIX_FMT_NONE,
                          0, NULL, NULL, NULL);
+}
+#endif
+
+#ifdef FFMPEG_HAS_avdevice
+void ffmpeg_avdevice_stub_load() {
+    (void)avdevice_list_devices(NULL, NULL);
 }
 #endif

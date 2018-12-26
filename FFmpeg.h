@@ -61,6 +61,11 @@ __BEGIN_DECLS
 #include "libswscale/version.h"
 #endif
 
+#ifdef FFMPEG_HAS_avdevice
+#include "libavdevice/avdevice.h"
+#include "libavdevice/version.h"
+#endif
+
 __END_DECLS
 
 #endif

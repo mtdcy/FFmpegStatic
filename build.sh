@@ -6,10 +6,16 @@ source cbox.sh
 # Note: 
 # 1. for release, it's better to build a huge bundle. but for project use, huge bundle takes too much resources
 BUILD_HUGE=${BUILD_HUGE:=1}
-BUILD_DEP=${BUILD_DEP:=1}
+BUILD_DEPS=${BUILD_DEPS:=1}
 BUILD_GPL=${BUILD_GPL:=0}
-BUILD_ENCODER=${BUILD_ENCODER:=0}
-BUILD_MUXER=${BUILD_MUXER:=0}
+BUILD_DEMUXER=${BUILD_DEMUXER:=1}
+BUILD_MUXER=${BUILD_MUXER:=${BUILD_HUGE}}
+BUILD_DECODER=${BUILD_DECODER:=1}
+BUILD_ENCODER=${BUILD_ENCODER:=${BUILD_HUGE}}
+
+info "huge ${BUILD_HUGE}, deps ${BUILD_DEPS}, gpl ${BUILD_GPL}"
+info "demuxer ${BUILD_DEMUXER}, muxer ${BUILD_MUXER}"
+info "decoder ${BUILD_DECODER}, encoder ${BUILD_ENCODER}"
 
 # common codecs
 DEMUXERS="aac,ac3,amr,ape,apng,aptx,asf,avi,eac3,flac,flv,gif,gsm,hls,m4v,matroska,mjpeg,mov,mp3,mpegps,mpegts,ogg,vc1,wav"
@@ -35,13 +41,20 @@ info "PREFIX: $PREFIX"
 mkdir -p $WS/build/
 cd $WS/build 
 
-if [ $BUILD_DEP -eq 1 ]; then 
+if [ $BUILD_DEPS -eq 1 ]; then 
 # zlib - zlib license 
 ZLIB_ARGS="--prefix=$PREFIX"
 tar -xf $WS/packages/zlib-1.2.11.tar.gz  &&
 cd zlib-1.2.11  &&
 ./configure $ZLIB_ARGS && 
 make install || { error "build zlib failed"; exit 1; }
+cd -
+
+# bzip2 - 
+BZIP2_ARGS="PREFIX=$PREFIX"
+tar -xf $WS/packages/bzip2-1.0.6.tar.gz &&
+cd bzip2-1.0.6 &&
+make install $BZIP2_ARGS || { error "build bzip2 failed"; exit 1; }
 cd -
 
 # lzma - in the public domain
@@ -60,10 +73,10 @@ cd libiconv-1.15  &&
 make install || { error "build libiconv failed"; exit 1; }
 cd -
 
-fi  # BUILD_DEP
+fi  # BUILD_DEPS
 
 # FFmpeg - GPL or LGPL
-FFMPEG_ARGS="--prefix=$PREFIX --extra-ldflags=\"-L$PREFIX/lib\" --extra-cflags=\"-I$PREFIX/include\" --enable-shared --enable-static --enable-rpath --enable-pthreads --enable-hardcoded-tables --cc=clang --host-cflags= --host-ldflags= --enable-opencl --enable-videotoolbox"
+FFMPEG_ARGS="--prefix=$PREFIX --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include --enable-shared --enable-static --enable-rpath --enable-pthreads --enable-hardcoded-tables --cc=clang --host-cflags= --host-ldflags= --enable-opencl --enable-videotoolbox"
 if [ $BUILD_HUGE -eq 1 ]; then 
     FFMPEG_ARGS+=" --enable-decoders --enable-encoders --enable-demuxers --enable-muxers"
 else
@@ -81,5 +94,5 @@ info "ARGS: $FFMPEG_ARGS"
 tar -xf $WS/packages/ffmpeg-4.1.tar.bz2 &&
 cd ffmpeg-4.1 &&
 ./configure $FFMPEG_ARGS &&
-make install || { error "build ffmpeg failed"; exit 1; }
+make clean && make install || { error "build ffmpeg failed"; exit 1; }
 cd -

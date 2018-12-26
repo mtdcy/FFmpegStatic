@@ -31,31 +31,31 @@ endif()
 
 set (CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set (FFMPEG_LIBS avutil avcodec)
-set (FFMPEG_DEP_LIBS z lzma iconv swresample)
+set (FFMPEG_LIBS avutil avcodec avformat avfilter swresample swscale avdevice)
+set (FFMPEG_DEP_LIBS z bz2 lzma iconv)
 
 foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS}) 
     message(STATUS ": import ${LIB}")
     import_static_prebuilt(${LIB})
 endforeach()
 
-# out target
+# headers
+set (FFMPEG_HEADERS FFmpeg.h)
 file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "
 // Created by Chen Fang.
 // Copyright (c) 2018 Chen Fang. All rights reserved.
 #ifndef __FFMPEG_CONFIGURATION_H__
 #define __FFMPEG_CONFIGURATION_H__
 ")
-
-set (FFMPEG_HEADERS FFmpeg.h)
 foreach (LIB ${FFMPEG_LIBS})
-    file(GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "prebuilts/include/lib${LIB}/*.h")
-    list(APPEND FFMPEG_HEADERS ${_HEADERS})
+    file (GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "prebuilts/include/lib${LIB}/*.h")
+    list (APPEND FFMPEG_HEADERS ${_HEADERS})
     file (APPEND ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "#define FFMPEG_HAS_${LIB}\n")
 endforeach()
 file (APPEND ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "#endif\n")
-list(APPEND FFMPEG_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h)
+list (APPEND FFMPEG_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h)
 
+# our target 
 add_library(${PROJECT_NAME} SHARED stub.c ${FFMPEG_HEADERS})
 
 # include and links
@@ -65,12 +65,18 @@ foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS})
 endforeach()
 
 if (APPLE)
-    set (FFMPEG_DEP_FRAMEWORKS CoreFoundation CoreMedia CoreVideo CoreServices AudioToolbox VideoToolbox OpenCL)
+    set (FFMPEG_DEP_FRAMEWORKS 
+        Foundation CoreFoundation 
+        CoreMedia CoreVideo CoreGraphics CoreServices CoreImage 
+        AudioToolbox VideoToolbox 
+        OpenCL OpenGL
+        AppKit Security)
     foreach (FRAMEWORK ${FFMPEG_DEP_FRAMEWORKS})
         target_link_libraries(${PROJECT_NAME} "-framework ${FRAMEWORK}")
     endforeach()
 endif()
 
+# install
 if (${CMAKE_GENERATOR} STREQUAL "Xcode")
     # public headers
     foreach (LIB ${FFMPEG_LIBS})
