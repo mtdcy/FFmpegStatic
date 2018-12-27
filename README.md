@@ -13,7 +13,7 @@ This project includes:
 * FFmpeg.framework for macOS [DONE]
 * FFmpeg.framework for iOS
 * libFFmpeg.so for Android 
-* control visibility of symbols in linked static libraries [HIGH]
+* control visibility of symbols in linked static libraries [DONE]
 
 ## Notes
 
