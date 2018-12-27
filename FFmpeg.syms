@@ -1,0 +1,10 @@
+_av_*
+_avio_*
+_avcodec_*
+_avdevice_*
+_avfilter_*
+_avformat_*
+_swr_*
+_swresample_*
+_sws_*
+_swscale_*

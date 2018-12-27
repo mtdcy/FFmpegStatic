@@ -30,6 +30,7 @@ if (${CMAKE_GENERATOR} STREQUAL "Xcode")
 endif()
 
 set (CMAKE_INCLUDE_CURRENT_DIR ON)
+set (CMAKE_C_VISIBILITY_PRESET hidden) # we don't need export symbols in FFmpeg.c
 
 set (FFMPEG_LIBS avutil avcodec avformat avfilter swresample swscale avdevice)
 set (FFMPEG_DEP_LIBS z bz2 lzma iconv)
@@ -64,6 +65,12 @@ foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS})
     target_link_libraries(${PROJECT_NAME} ${LIB})
 endforeach()
 
+# control visibility of symbols
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    LINK_FLAGS "-Wl,-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/FFmpeg.syms"
+    )
+
+# link apple frameworks
 if (APPLE)
     set (FFMPEG_DEP_FRAMEWORKS 
         Foundation CoreFoundation 
