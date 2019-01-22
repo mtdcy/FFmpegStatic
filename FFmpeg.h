@@ -13,57 +13,57 @@
 
 __BEGIN_DECLS
 
-#include "FFmpegConfiguration.h"
+#include <FFmpeg/FFmpegConfiguration.h>
 
 /** avutils headers */
 #ifdef FFMPEG_HAS_avutil
-#include "libavutil/avutil.h"
-#include "libavutil/buffer.h"
-#include "libavutil/frame.h"
-#include "libavutil/version.h"
-#include "libavutil/hwcontext.h"
-#include "libavutil/pixfmt.h"
-#include "libavutil/pixdesc.h"
-#include "libavutil/pixelutils.h"
+#include <FFmpeg/libavutil/avutil.h>
+#include <FFmpeg/libavutil/buffer.h>
+#include <FFmpeg/libavutil/frame.h>
+#include <FFmpeg/libavutil/version.h>
+#include <FFmpeg/libavutil/hwcontext.h>
+#include <FFmpeg/libavutil/pixfmt.h>
+#include <FFmpeg/libavutil/pixdesc.h>
+#include <FFmpeg/libavutil/pixelutils.h>
 #endif
 
 /** avcodec headers */
 #ifdef FFMPEG_HAS_avcodec
-#include "libavcodec/version.h"
-#include "libavcodec/avcodec.h"
+#include <FFmpeg/libavcodec/version.h>
+#include <FFmpeg/libavcodec/avcodec.h>
 #ifdef __APPLE__
-#include "libavcodec/videotoolbox.h"
+#include <FFmpeg/libavcodec/videotoolbox.h>
 #endif
 #endif
 
 /** avformat headers */
 #ifdef FFMPEG_HAS_avformat
-#include "libavformat/avformat.h"
-#include "libavformat/avio.h"
-#include "libavformat/version.h"
+#include <FFmpeg/libavformat/avformat.h>
+#include <FFmpeg/libavformat/avio.h>
+#include <FFmpeg/libavformat/version.h>
 #endif
 
 /** avfilter headers */
 #ifdef FFMPEG_HAS_avfilter
-#include "libavfilter/avfilter.h"
-#include "libavfilter/version.h"
+#include <FFmpeg/libavfilter/avfilter.h>
+#include <FFmpeg/libavfilter/version.h>
 #endif
 
 /** swresample headers */
 #ifdef FFMPEG_HAS_swresample
-#include "libswresample/swresample.h"
-#include "libswresample/version.h"
+#include <FFmpeg/libswresample/swresample.h>
+#include <FFmpeg/libswresample/version.h>
 #endif
 
 /** swscale headers */
 #ifdef FFMPEG_HAS_swscale
-#include "libswscale/swscale.h"
-#include "libswscale/version.h"
+#include <FFmpeg/libswscale/swscale.h>
+#include <FFmpeg/libswscale/version.h>
 #endif
 
 #ifdef FFMPEG_HAS_avdevice
-#include "libavdevice/avdevice.h"
-#include "libavdevice/version.h"
+#include <FFmpeg/libavdevice/avdevice.h>
+#include <FFmpeg/libavdevice/version.h>
 #endif
 
 __END_DECLS
