@@ -57,12 +57,13 @@ file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "
 foreach (LIB ${FFMPEG_LIBS})
     file (GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "prebuilts/include/lib${LIB}/*.h")
     file (APPEND ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "#define FFMPEG_HAS_${LIB}\n")
+    list (APPEND PRIVATE_HEADERS ${_HEADERS})
 endforeach()
 file (APPEND ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "#endif\n")
 list (APPEND FFMPEG_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h)
 
 # our target 
-add_library(${PROJECT_NAME} SHARED stub.c ${FFMPEG_HEADERS})
+add_library(${PROJECT_NAME} SHARED stub.c ${FFMPEG_HEADERS} ${PRIVATE_HEADERS})
 
 # include and links
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/prebuilts/include)
