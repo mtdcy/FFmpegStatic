@@ -2,6 +2,7 @@
 cd `dirname $0`
 source cbox.sh
 
+# for Windows: avoid build shared libraries (.dll), which cause => *.lib *.dll.a
 # config 
 # Note: 
 # 1. for release, it's better to build a huge bundle. but for project use, huge bundle takes too much resources
@@ -75,7 +76,7 @@ cd -
 fi  # BUILD_DEPS
 
 # FFmpeg - GPL or LGPL
-FFMPEG_ARGS="--prefix=$PREFIX --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include --enable-shared --enable-static --enable-hardcoded-tables --host-cflags= --host-ldflags= "
+FFMPEG_ARGS="--prefix=$PREFIX --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include --disable-shared --enable-static --enable-hardcoded-tables --host-cflags= --host-ldflags= "
 if [ $BUILD_HUGE -eq 1 ]; then 
     FFMPEG_ARGS+=" --enable-decoders --enable-encoders --enable-demuxers --enable-muxers"
 else

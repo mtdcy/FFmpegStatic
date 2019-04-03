@@ -6,7 +6,6 @@ project (FFmpeg)
 macro (import_static_prebuilt library) 
     find_library(LIB_${library}
         NAMES lib${library}.a
-        NAMES lib${library}.dll.a
         PATHS ${CMAKE_CURRENT_SOURCE_DIR}/prebuilts/lib 
         NO_DEFAULT_PATH
         )
@@ -24,11 +23,7 @@ if (APPLE)
     set (CMAKE_MACOSX_RPATH TRUE)
 endif()
 
-if(WIN32)
-    set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-else()
-    set (CMAKE_C_VISIBILITY_PRESET hidden) # we don't need export symbols in FFmpeg.c
-endif()
+set (CMAKE_C_VISIBILITY_PRESET hidden)
 
 if (APPLE)
     set (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
@@ -67,14 +62,16 @@ add_library(${PROJECT_NAME} SHARED stub.c ${FFMPEG_HEADERS} ${PRIVATE_HEADERS})
 
 # include and links
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/prebuilts/include)
-foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS})
-    target_link_libraries(${PROJECT_NAME} ${LIB})
-endforeach()
+#foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS})
+#    target_link_libraries(${PROJECT_NAME} ${LIB})
+#endforeach()
+target_link_libraries(${PROJECT_NAME} -Wl,--start-group ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS} -Wl,--end-group)
 
 # control visibility of symbols
 if (CMAKE_COMPILER_IS_GNUCC)
+    # https://sourceware.org/binutils/docs/ld/VERSION.html
     set_target_properties(${PROJECT_NAME} PROPERTIES
-        LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/FFmpeg.ver"
+        LINK_FLAGS "-Wl,--version-script,${CMAKE_CURRENT_SOURCE_DIR}/FFmpeg.ver"
         )
 else()
     set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -93,8 +90,10 @@ if (APPLE)
     foreach (FRAMEWORK ${FFMPEG_DEP_FRAMEWORKS})
         target_link_libraries(${PROJECT_NAME} "-framework ${FRAMEWORK}")
     endforeach()
+elseif(WIN32)
+    target_link_libraries(${PROJECT_NAME} -lbcrypt -lmsvcrt -lsecur32 -lws2_32 -lwinpthread)
 else()
-# TODO
+    # FIXME
 endif()
 
 # install
