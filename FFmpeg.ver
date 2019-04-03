@@ -1,0 +1,15 @@
+FFmpegStatic {
+global:
+    av_*;
+    avio_*;
+    avcodec_*;
+    avdevice_*;
+    avfilter_*;
+    avformat_*;
+    swr_*;
+    swresample_*;
+    sws_*;
+    swscale_*;
+local:
+    *;
+};

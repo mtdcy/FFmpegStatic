@@ -1,6 +1,6 @@
 //
-//  FFmpeg.h
-//  FFmpeg
+//  .h
+//  
 //
 //  Created by Chen Fang on 2018/12/25.
 //  Copyright © 2018 Chen Fang. All rights reserved.
@@ -9,61 +9,61 @@
 #ifndef __FFMPEG_HEADERS__
 #define __FFMPEG_HEADERS__
 
-#include <sys/cdefs.h>
+#include "sys/cdefs.h"
 
 __BEGIN_DECLS
 
-#include <FFmpeg/FFmpegConfiguration.h>
+#include "FFmpegConfiguration.h"
 
 /** avutils headers */
 #ifdef FFMPEG_HAS_avutil
-#include <FFmpeg/libavutil/avutil.h>
-#include <FFmpeg/libavutil/buffer.h>
-#include <FFmpeg/libavutil/frame.h>
-#include <FFmpeg/libavutil/version.h>
-#include <FFmpeg/libavutil/hwcontext.h>
-#include <FFmpeg/libavutil/pixfmt.h>
-#include <FFmpeg/libavutil/pixdesc.h>
-#include <FFmpeg/libavutil/pixelutils.h>
+#include "libavutil/avutil.h"
+#include "libavutil/buffer.h"
+#include "libavutil/frame.h"
+#include "libavutil/version.h"
+#include "libavutil/hwcontext.h"
+#include "libavutil/pixfmt.h"
+#include "libavutil/pixdesc.h"
+#include "libavutil/pixelutils.h"
 #endif
 
 /** avcodec headers */
 #ifdef FFMPEG_HAS_avcodec
-#include <FFmpeg/libavcodec/version.h>
-#include <FFmpeg/libavcodec/avcodec.h>
+#include "libavcodec/version.h"
+#include "libavcodec/avcodec.h"
 #ifdef __APPLE__
-#include <FFmpeg/libavcodec/videotoolbox.h>
+#include "libavcodec/videotoolbox.h"
 #endif
 #endif
 
 /** avformat headers */
 #ifdef FFMPEG_HAS_avformat
-#include <FFmpeg/libavformat/avformat.h>
-#include <FFmpeg/libavformat/avio.h>
-#include <FFmpeg/libavformat/version.h>
+#include "libavformat/avformat.h"
+#include "libavformat/avio.h"
+#include "libavformat/version.h"
 #endif
 
 /** avfilter headers */
 #ifdef FFMPEG_HAS_avfilter
-#include <FFmpeg/libavfilter/avfilter.h>
-#include <FFmpeg/libavfilter/version.h>
+#include "libavfilter/avfilter.h"
+#include "libavfilter/version.h"
 #endif
 
 /** swresample headers */
 #ifdef FFMPEG_HAS_swresample
-#include <FFmpeg/libswresample/swresample.h>
-#include <FFmpeg/libswresample/version.h>
+#include "libswresample/swresample.h"
+#include "libswresample/version.h"
 #endif
 
 /** swscale headers */
 #ifdef FFMPEG_HAS_swscale
-#include <FFmpeg/libswscale/swscale.h>
-#include <FFmpeg/libswscale/version.h>
+#include "libswscale/swscale.h"
+#include "libswscale/version.h"
 #endif
 
 #ifdef FFMPEG_HAS_avdevice
-#include <FFmpeg/libavdevice/avdevice.h>
-#include <FFmpeg/libavdevice/version.h>
+#include "libavdevice/avdevice.h"
+#include "libavdevice/version.h"
 #endif
 
 __END_DECLS
