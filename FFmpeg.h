@@ -11,6 +11,14 @@
 
 #include "sys/cdefs.h"
 
+// libavutil need this
+#ifndef __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS
+#endif
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS
+#endif
+
 __BEGIN_DECLS
 
 #include "FFmpegConfiguration.h"
