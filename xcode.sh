@@ -6,7 +6,7 @@ fi
 
 cd xcode
 
-cmake -G Xcode -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/ ..
+cmake -G Xcode -DCMAKE_INSTALL_PREFIX=~/Library/Frameworks ..
 
 # better to build using xcode
 #xcodebuild -alltargets -config Release clean install
