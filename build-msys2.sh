@@ -13,6 +13,7 @@ BUILD_DEMUXER=${BUILD_DEMUXER:=1}
 BUILD_MUXER=${BUILD_MUXER:=${BUILD_HUGE}}
 BUILD_DECODER=${BUILD_DECODER:=1}
 BUILD_ENCODER=${BUILD_ENCODER:=${BUILD_HUGE}}
+NJOBS=${NJOBS:=4}
 
 info "huge ${BUILD_HUGE}, deps ${BUILD_DEPS}, gpl ${BUILD_GPL}"
 info "demuxer ${BUILD_DEMUXER}, muxer ${BUILD_MUXER}"
@@ -62,7 +63,7 @@ XZ_ARGS="--prefix=$PREFIX --disable-debug --disable-dependency-tracking --disabl
 tar -xf $WS/packages/xz-5.2.4.tar.bz2  &&
 cd xz-5.2.4  &&
 ./configure $XZ_ARGS && 
-make -j && make install || { error "build lzma failed"; exit 1; }
+make -j$NJOBS && make install || { error "build lzma failed"; exit 1; }
 cd -
 
 # libiconv - LGPL
@@ -70,7 +71,7 @@ LIBICONV_ARGS="--prefix=$PREFIX --disable-dependency-tracking --disable-debug --
 tar -xf $WS/packages/libiconv-1.15.tar.gz &&
 cd libiconv-1.15  &&
 ./configure $LIBICONV_ARGS && 
-make -j && make install || { error "build libiconv failed"; exit 1; }
+make -j$NJOBS && make install || { error "build libiconv failed"; exit 1; }
 cd -
 
 fi  # BUILD_DEPS
@@ -94,5 +95,5 @@ info "ARGS: $FFMPEG_ARGS"
 tar -xf $WS/packages/ffmpeg-4.1.tar.bz2 &&
 cd ffmpeg-4.1 &&
 ./configure $FFMPEG_ARGS &&
-make clean && make -j && make install || { error "build ffmpeg failed"; exit 1; }
+make clean && make -j$NJOBS && make install || { error "build ffmpeg failed"; exit 1; }
 cd -
