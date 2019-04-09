@@ -1,12 +1,12 @@
 #!/bin/bash 
-
-source cbox.sh 
+SOURCE=`dirname $0`
+source $SOURCE/cbox.sh 
 
 function sha256() {
     openssl dgst -sha256 $1 | awk '{print $NF}'
 }
 
-cat list.txt | while read line; do
+cat $SOURCE/list.txt | while read line; do
     sha=`echo $line | awk '{print $1}'`
     url=`echo $line | awk '{print $2}'`
     file=`basename $url`

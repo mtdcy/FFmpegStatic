@@ -1,6 +1,6 @@
 #!/bin/bash 
-cd `dirname $0`
-source cbox.sh
+SOURCE=`dirname $0`
+source $SOURCE/cbox.sh
 
 # config 
 # Note: 
@@ -34,7 +34,7 @@ WS=`pwd`
 # download packages
 PKG=$WS/packages
 mkdir -p $WS/packages
-./download.sh || { error "download packages failed"; exit 1; }
+$SOURCE/download.sh || { error "download packages failed"; exit 1; }
 
 # setup env
 PREFIX=$WS/prebuilts
@@ -44,7 +44,7 @@ cd $WS/build
 
 if [ $BUILD_DEPS -eq 1 ]; then 
 # zlib - zlib license 
-ZLIB_ARGS="--prefix=$PREFIX"
+ZLIB_ARGS="--prefix=$PREFIX --static"
 tar -xf $WS/packages/zlib-1.2.11.tar.gz  &&
 cd zlib-1.2.11  &&
 ./configure $ZLIB_ARGS && 
@@ -77,7 +77,7 @@ cd -
 fi  # BUILD_DEPS
 
 # FFmpeg - GPL or LGPL
-FFMPEG_ARGS="--prefix=$PREFIX --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include --enable-shared --enable-static --enable-rpath --enable-pthreads --enable-hardcoded-tables --cc=clang --host-cflags= --host-ldflags= --enable-opencl --enable-videotoolbox"
+FFMPEG_ARGS="--prefix=$PREFIX --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include --disable-shared --enable-static --enable-rpath --enable-pthreads --enable-hardcoded-tables --cc=clang --host-cflags= --host-ldflags= --enable-opencl --enable-videotoolbox"
 if [ $BUILD_HUGE -eq 1 ]; then 
     FFMPEG_ARGS+=" --enable-decoders --enable-encoders --enable-demuxers --enable-muxers"
 else

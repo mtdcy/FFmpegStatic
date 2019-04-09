@@ -63,7 +63,7 @@ add_library(${PROJECT_NAME} SHARED stub.c ${FFMPEG_HEADERS} ${PRIVATE_HEADERS})
 # include and links
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/prebuilts/include)
 if (CMAKE_COMPILER_IS_GNUCC)
-    target_link_libraries(${PROJECT_NAME} -Wl,--start-group ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS} -Wl,--end-group)
+    target_link_libraries(${PROJECT_NAME} -Wl,--whole-archive -Wl,--start-group ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS} -Wl,--end-group)
 else()
     target_link_libraries(${PROJECT_NAME} ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS})
 endif()

@@ -2,7 +2,6 @@
 SOURCE=`dirname $0`
 source $SOURCE/cbox.sh
 
-# for Windows: avoid build shared libraries (.dll), which cause => *.lib *.dll.a
 # config 
 # Note: 
 # 1. for release, it's better to build a huge bundle. but for project use, huge bundle takes too much resources
@@ -45,10 +44,11 @@ cd $WS/build
 
 if [ $BUILD_DEPS -eq 1 ]; then 
 # zlib - zlib license 
-ZLIB_ARGS="--prefix=$PREFIX"
+ZLIB_ARGS="--prefix=$PREFIX --static"
 tar -xf $WS/packages/zlib-1.2.11.tar.gz  &&
-cd zlib-1.2.11  &&
-DESTDIR=$PREFIX INCLUDE_PATH="/include" LIBRARY_PATH="/lib" BINARY_PATH="/bin" make install -f win32/Makefile.gcc || { error "build zlib failed"; exit 1; }
+cd zlib-1.2.11  && make distclean
+./configure $ZLIB_ARGS && 
+make install || { error "build zlib failed"; exit 1; }
 cd -
 
 # bzip2 - 
@@ -77,7 +77,7 @@ cd -
 fi  # BUILD_DEPS
 
 # FFmpeg - GPL or LGPL
-FFMPEG_ARGS="--prefix=$PREFIX --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include --disable-shared --enable-static --enable-hardcoded-tables --host-cflags= --host-ldflags= "
+FFMPEG_ARGS="--prefix=$PREFIX --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include --disable-shared --enable-static --enable-pthreads --enable-hardcoded-tables --host-cflags= --host-ldflags= --enable-pic"
 if [ $BUILD_HUGE -eq 1 ]; then 
     FFMPEG_ARGS+=" --enable-decoders --enable-encoders --enable-demuxers --enable-muxers"
 else
