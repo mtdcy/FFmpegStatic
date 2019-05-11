@@ -1,14 +1,16 @@
 #!/bin/bash
 
-if [ ! -d xcode ]; then
-    mkdir xcode 
-fi
+SOURCE=`pwd`/`dirname $0`
+PREBUILTS=$SOURCE/build/$OSTYPE 
+FFMPEG=`cd $SOURCE/build/ffmpeg-* && pwd && cd -`
 
-cd xcode
+ARGS="-G Xcode"
+ARGS+=" -DCMAKE_IGNORE_PATH=\"/usr/local/lib;/usr/local/include\""
+ARGS+=" -DCMAKE_INSTALL_PREFIX=~/Library/Frameworks"
+ARGS+=" -DFFMPEG_PREBUILTS=$PREBUILTS"
+ARGS+=" -DFFMPEG_SOURCES=$FFMPEG"
 
-cmake -G Xcode -DCMAKE_INSTALL_PREFIX=~/Library/Frameworks ..
-
-# better to build using xcode
-#xcodebuild -alltargets -config Release clean install
-
+echo "cmake $ARGS"
+rm -rf xcode && mkdir -p xcode && cd xcode 
+cmake $ARGS .. && xcodebuild -alltargets -config Release 
 cd -

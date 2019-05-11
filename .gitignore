@@ -1,4 +1,4 @@
-build/*
-packages/*
-prebuilts/*
-xcode/*
+build/
+xcode/
+*.swp
+.DS_Store

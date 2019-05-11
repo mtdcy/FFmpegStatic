@@ -1,5 +1,0 @@
-c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1    https://zlib.net/zlib-1.2.11.tar.gz
-b684fb43244a5c4caae652af9022ed5d85ce15210835bce054a33fb26033a1a5    https://ffmpeg.org/releases/ffmpeg-4.1.tar.bz2 
-3313fd2a95f43d88e44264e6b015e7d03053e681860b0d5d3f9baca79c57b7bf    https://tukaani.org/xz/xz-5.2.4.tar.bz2
-ccf536620a45458d26ba83887a983b96827001e92a13847b45e4925cc8913178    https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.15.tar.gz
-a2848f34fcd5d6cf47def00461fcb528a0484d8edef8208d6d2e2909dc61d9cd    https://ftp.osuosl.org/pub/clfs/conglomeration/bzip2/bzip2-1.0.6.tar.gz
