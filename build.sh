@@ -91,7 +91,7 @@ function build_package() {
 }
 
 # clear 
-[ $BUILD_DEPS -eq 1 ] && rm -rf $WORKSPACE 
+[ $BUILD_DEPS -eq 1 ] && rm -rf $PREFIX
 mkdir -p $WORKSPACE && cd $WORKSPACE
 
 # basic libs
