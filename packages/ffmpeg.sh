@@ -85,6 +85,7 @@ function install() {
         ARGS+=" --enable-videotoolbox"
         ARGS+=" --enable-opencl"
         ARGS+=" --enable-opengl"
+        ARGS+=" --enable-securetransport"   # openssl
     fi
     # for test
     ARGS+=" --samples=fate-suite/"
