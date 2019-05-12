@@ -2,28 +2,28 @@ cmake_minimum_required (VERSION 2.8)
 
 project (FFmpeg)
 
+set (VERSION_MAJOR  0)
+set (VERSION_MINOR  1)
+set (VERSION_BUILD  1)
+
 if (NOT DEFINED FFMPEG_PREBUILTS)
     message(FATAL_ERROR " FFMPEG_PREBUILTS is not set")
 endif()
 if (NOT DEFINED FFMPEG_SOURCES)
-    message(STATUS " FFMPEG_SOURCES is not set")
+    message(FATAL_ERROR " FFMPEG_SOURCES is not set")
 endif()
 option(WITH_EASY    "FFmpeg easy use interface"     ON)
 
 # macro for import local static library
 macro (import_static_prebuilt library) 
-    find_library(LIB_${library}
-        NAMES lib${library}.a
-        PATHS ${FFMPEG_PREBUILTS}/lib 
-        NO_DEFAULT_PATH
-        )
-    if (${LIB_${library}} STREQUAL LIB_${library}-NOTFOUND) 
-        message (STATUS ": Library ${library} not found in ${FFMPEG_PREBUILTS}/lib")
+    set (_LOC ${FFMPEG_PREBUILTS}/lib/lib${library}.a)
+    if (EXISTS ${_LOC})
+        message (STATUS ": Library ${library} found @ ${_LOC}")
+        add_library(${library} STATIC IMPORTED GLOBAL)
+        set_property(TARGET ${library} PROPERTY IMPORTED_LOCATION ${_LOC})
     else()
-        message (STATIC ": Library ${library} found at ${LIB_${library}}")
+        message (STATUS ": Library ${library} not found")
     endif()
-    add_library(${library} STATIC IMPORTED GLOBAL)
-    set_property(TARGET ${library} PROPERTY IMPORTED_LOCATION ${LIB_${library}})
 endmacro(import_static_prebuilt)
 
 # project settings
@@ -52,8 +52,8 @@ set (FFMPEG_DEP_LIBS
 foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS}) 
     message(STATUS ": import ${LIB}")
     import_static_prebuilt(${LIB})
-    if (EXISTS ${LIB_${LIB}})
-        list(APPEND IMPORTED_LIBS ${LIB_${LIB}})
+    if (TARGET ${LIB})
+        list(APPEND IMPORTED_LIBS ${LIB})
     endif()
 endforeach()
 
@@ -116,20 +116,18 @@ endif()
 
 ##############################################################################
 # rebuilt ffmpeg using our framework
-if (DEFINED FFMPEG_SOURCES)
-    add_executable(main 
-        ${FFMPEG_SOURCES}/fftools/ffmpeg.c 
-        ${FFMPEG_SOURCES}/fftools/cmdutils.c 
-        ${FFMPEG_SOURCES}/fftools/ffmpeg_filter.c 
-        ${FFMPEG_SOURCES}/fftools/ffmpeg_hw.c
-        ${FFMPEG_SOURCES}/fftools/ffmpeg_opt.c 
-        ${FFMPEG_SOURCES}/fftools/ffmpeg_videotoolbox.c 
-        ${FFMPEG_SOURCES}/fftools/ffmpeg_cuvid.c
-        )
-    include_directories (${FFMPEG_SOURCES})
-    include_directories (${FFMPEG_SOURCES}/fftools)
-    target_link_libraries(main ${PROJECT_NAME})
-endif()
+add_executable(main 
+    ${FFMPEG_SOURCES}/fftools/ffmpeg.c 
+    ${FFMPEG_SOURCES}/fftools/cmdutils.c 
+    ${FFMPEG_SOURCES}/fftools/ffmpeg_filter.c 
+    ${FFMPEG_SOURCES}/fftools/ffmpeg_hw.c
+    ${FFMPEG_SOURCES}/fftools/ffmpeg_opt.c 
+    ${FFMPEG_SOURCES}/fftools/ffmpeg_videotoolbox.c 
+    ${FFMPEG_SOURCES}/fftools/ffmpeg_cuvid.c
+    )
+include_directories (${FFMPEG_SOURCES})
+include_directories (${FFMPEG_SOURCES}/fftools)
+target_link_libraries(main ${PROJECT_NAME})
 
 if (WITH_EASY) 
     add_executable(easy easy.cpp)
@@ -150,19 +148,22 @@ if (XCODE)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         FRAMEWORK TRUE
         FRAMEWORK_VERSION A
+        VERSION         "${VERSION_MAJOR}.${VERSION_MINOR}"
+        SOVERSION       "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUILD}"
         PUBLIC_HEADER   "${FFMPEG_HEADERS}"
         MACOSX_FRAMEWORK_IDENTIFIER com.mtdcy.FFmpeg
         MACOSX_FRAMEWORK_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
         )
 
     install (TARGETS ${PROJECT_NAME} 
-        FRAMEWORK       DESTINATION     .
+        FRAMEWORK       DESTINATION     ${CMAKE_INSTALL_PREFIX}
         RESOURCE        DESTINATION     Resources
         PUBLIC_HEADER   DESTINATION     Headers
         )
 
-    # ugly code
+    # ugly install code
     set (_DEST ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.framework)
+    install (FILES ${FFMPEG_PREBUILTS}/LIBRARIES.txt DESTINATION ${_DEST}/Resources)
     if (EXISTS ${FFMPEG_PREBUILTS}/lib/frei0r-1)
         file (GLOB frei0r "${FFMPEG_PREBUILTS}/lib/frei0r-1/*")
         install(DIRECTORY DESTINATION ${_DEST}/Resources/frei0r-1)
@@ -172,15 +173,14 @@ if (XCODE)
         endforeach()
     endif()
 
-    if (DEFINED FFMPEG_SOURCES)
-        install (TARGETS main DESTINATION ${_DEST})
-        file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
-        install (FILES ${_LICENSE} DESTINATION ${_DEST}/Resources)
-        install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION ${_DEST}/Resources)
-        install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION ${_DEST}/Resources)
-        install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${_DEST}/Resources)
-        install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${_DEST}/Resources)
-    endif()
+    install (TARGETS main DESTINATION ${_DEST})
+    install (PROGRAMS frei0r.sh DESTINATION ${_DEST} RENAME frei0r)
+    file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
+    install (FILES ${_LICENSE} DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${_DEST}/Resources)
 else()
     # libraries headers
     foreach (LIB ${FFMPEG_LIBS})

@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-SOURCE=`pwd`/`dirname $0`
+cd `dirname $0` && SOURCE=`pwd` && cd -
 WORKSPACE=`pwd`/build
 source $SOURCE/packages/cbox.sh
 
@@ -102,6 +102,8 @@ function build_package() {
 # clear 
 [ $BUILD_DEPS -eq 1 ] && rm -rf $PREFIX
 mkdir -p $WORKSPACE && cd $WORKSPACE
+mkdir -p $PREFIX
+touch $PREFIX/LIBRARIES.txt 
 
 # basic libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/zlib.sh 

@@ -17,10 +17,14 @@ function install() {
         ARGS+=" -DBUILD_SHARED_LIBS=OFF"
     fi
     rm -rf build && mkdir build && cd build
+
+    info "openjpeg: cmake $ARGS .."
     cmake $ARGS .. || return 1
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
     cd -
+    sed -i '/openjpeg:/d' $PREFIX/LIBRARIES.txt || return
+    echo "openjpeg: 2.3.1" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 openjpeg-`basename $url` &&

@@ -18,13 +18,17 @@ function install() {
         ARGS+=" -DENABLE_SHARED=FALSE"
     fi
     rm -rf build && mkdir build && cd build
+
+    info "libjpeg-turbo: cmake $ARGS .."
     cmake $ARGS .. || return 1
-    make -j$NJOBS || return 1
+    $MAKE -j$NJOBS || return 1
     if [ $BUILD_TEST -eq 1 ]; then
-        make test || return 1
+        $MAKE test || return 1
     fi
-    make install || return 1    # & test
+    $MAKE install || return 1    # & test
     cd -
+    sed -i '/libjpeg-turbo:/d' $PREFIX/LIBRARIES.txt || return
+    echo "libjpeg-turbo: 2.0.2" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

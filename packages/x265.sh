@@ -17,9 +17,13 @@ function install() {
     else
         ARGS+=" -DENABLE_SHARED=OFF"
     fi
+
+    info "x265: cmake $ARGS source"
     cmake $ARGS source || return 
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
+    sed -i '/x265:/d' $PREFIX/LIBRARIES.txt || return
+    echo "x265: 3.0" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

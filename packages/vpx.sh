@@ -19,14 +19,17 @@ function install() {
         ARGS+=" --disable-shared"
     fi
 
+    info "libvpx: ./configure $ARGS"
     ./configure $ARGS || return 1
     #if [[ "$OSTYPE" == "darwin"* ]]; then
-    #    sed -i 's/-Wl,--no-undefined/-Wl,-undefined,error/g' build/make/Makefile
+    #    sed -i 's/-Wl,--no-undefined/-Wl,-undefined,error/g' build/$MAKE/Makefile
     #    sed -i 's/-Wl,--no-undefined/-Wl,-undefined,error/g' Makefile
     #fi
 
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
+    sed -i '/libvpx:/d' $PREFIX/LIBRARIES.txt || return
+    echo "libvpx: 1.8.0" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 libvpx-`basename $url` &&

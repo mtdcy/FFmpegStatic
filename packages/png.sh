@@ -15,12 +15,16 @@ function install() {
     else
         ARGS+=" --disable-shared"
     fi
+
+    info "libpng: ./configure $ARGS"
     ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
+    $MAKE -j$NJOBS || return 1
     if [ $BUILD_TEST -eq 1 ]; then
-       make test || return 1      # very slow
+       $MAKE test || return 1      # very slow
     fi
-    make install || return 1
+    $MAKE install || return 1
+    sed -i '/libpng:/d' $PREFIX/LIBRARIES.txt || return
+    echo "libpng: 1.6.37" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

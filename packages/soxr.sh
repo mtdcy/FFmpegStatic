@@ -20,13 +20,17 @@ function install() {
         ARGS+=" -DBUILD_SHARED_LIBS=OFF"
     fi
     rm -rf build && mkdir build && cd build
+
+    info "soxr: cmake $ARGS .."
     cmake $ARGS .. || return 1
-    make -j$NJOBS || return 1
+    $MAKE -j$NJOBS || return 1
     if [ $BUILD_TEST -eq 1 ]; then 
-        make test || return 1
+        $MAKE test || return 1
     fi
-    make install || return 1
+    $MAKE install || return 1
     cd -
+    sed -i '/soxr:/d' $PREFIX/LIBRARIES.txt || return
+    echo "soxr: 0.1.3" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

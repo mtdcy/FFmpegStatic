@@ -12,12 +12,16 @@ function install() {
     if [ $BUILD_SHARED -eq 0 ]; then
         ARGS+=" --static"
     fi
+
+    info "zlib: ./configure $ARGS"
     ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
+    $MAKE -j$NJOBS || return 1
     if [ $BUILD_TEST -eq 1 ]; then 
-        make test || return 1
+        $MAKE test || return 1
     fi
-    make install || return 1
+    $MAKE install || return 1
+    sed -i '/zlib:/d' $PREFIX/LIBRARIES.txt || return
+    echo "zlib: 1.2.11" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

@@ -12,5 +12,6 @@ ARGS+=" -DFFMPEG_SOURCES=$FFMPEG"
 
 echo "cmake $ARGS"
 rm -rf xcode && mkdir -p xcode && cd xcode 
+rm -rf ~/Library/Frameworks/FFmpeg.framework
 cmake $ARGS .. && xcodebuild -alltargets -config Release 
 cd -

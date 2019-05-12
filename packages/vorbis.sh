@@ -15,9 +15,13 @@ function install() {
     else
         ARGS+=" --disable-shared"
     fi
+
+    info "libvorbis: ./configure $ARGS"
     ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
+    sed -i '/libvorbis:/d' $PREFIX/LIBRARIES.txt || return
+    echo "libvorbis: 1.3.6" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

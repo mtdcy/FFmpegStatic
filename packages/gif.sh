@@ -15,12 +15,16 @@ function install() {
     else
         ARGS+=" --disable-shared"
     fi
+
+    info "giflib: ./configure $ARGS"
     ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
+    $MAKE -j$NJOBS || return 1
     if [ $BUILD_TEST -eq 1 ]; then
-        make check || return 1
+        $MAKE check || return 1
     fi
-    make install || return 1
+    $MAKE install || return 1
+    sed -i '/giflib:/d' $PREFIX/LIBRARIES.txt || return
+    echo "giflib: 5.1.4" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

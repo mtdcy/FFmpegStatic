@@ -15,9 +15,13 @@ function install() {
     else
         ARGS+=" --disable-shared"
     fi
+
+    info "libxml2: ./configure $ARGS"
     ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
+    sed -i '/libxml2:/d' $PREFIX/LIBRARIES.txt || return
+    echo "libxml2: 2.9.9" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

@@ -12,8 +12,12 @@ function install() {
     sed -i '/AR=ar/d' Makefile
     sed -i '/RANLIB=ranlib/d' Makefile
     sed -i '/LDFLAGS=/d' Makefile
-    make -j$NJOBS || return 1
-    make install PREFIX=$PREFIX || return 1
+
+    info "bzip2: $MAKE..."
+    $MAKE -j$NJOBS || return 1
+    $MAKE install PREFIX=$PREFIX || return 1
+    sed -i '/bzip2:/d' $PREFIX/LIBRARIES.txt || return
+    echo "bzip2: 1.0.6" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

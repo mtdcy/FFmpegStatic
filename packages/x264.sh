@@ -13,9 +13,13 @@ function install() {
     if [ $BUILD_SHARED -eq 1 ]; then
         ARGS+=" --enable-shared"
     fi
+
+    info "x264: ./configure $ARGS"
     AS=$NASM ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
+    sed -i '/x264:/d' $PREFIX/LIBRARIES.txt || return
+    echo "x264: HEAD" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

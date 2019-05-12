@@ -36,10 +36,6 @@ function install() {
         ARGS+=" --extra-ldflags=-lc++"
     fi
 
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '/frei0r_pathlist\[\] =/a \\t\t"Resources/frei0r-1/",' libavfilter/vf_frei0r.c || return
-    fi
-
     if [ $BUILD_HUGE -eq 1 ]; then 
         ARGS+=" --enable-decoders --enable-encoders --enable-demuxers --enable-muxers"
     else
@@ -94,11 +90,19 @@ function install() {
     ARGS+=" --samples=fate-suite/"
     info "ARGS: $ARGS"
 
+    info "ffmpeg: ./configure $ARGS"
     ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
     # build tools but no install
-    make alltools || return 1
+    $MAKE alltools || return 1
+
+    sed -i '/libav*/d' $PREFIX/LIBRARIES.txt 
+    sed -i '/libswscale:/d' $PREFIX/LIBRARIES.txt 
+    sed -i '/libswresample/d' $PREFIX/LIBRARIES.txt 
+    sed -i '/libpostproc/d' $PREFIX/LIBRARIES.txt 
+    version=`./ffmpeg -version | grep ^lib`
+    echo -n $version >> $PREFIX/LIBRARIES.txt || return 
 }
 
 download $url $sha256 `basename $url` &&

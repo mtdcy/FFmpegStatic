@@ -16,9 +16,12 @@ function install() {
         ARGS+=" --disable-shared"
     fi
 
+    info "opencore-amr: ./configure $ARGS"
     ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
+    sed -i '/opencore-amr:/d' $PREFIX/LIBRARIES.txt || return
+    echo "opencore-amr: 0.1.5" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

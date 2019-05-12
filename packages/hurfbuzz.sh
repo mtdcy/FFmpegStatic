@@ -16,9 +16,13 @@ function install() {
     else
         ARGS+=" --disable-shared"
     fi
+
+    info "harfbuzz: ./configure $ARGS"
     ./configure $ARGS || return 1
-    make -j$NJOBS || return 1
-    make install || return 1
+    $MAKE -j$NJOBS || return 1
+    $MAKE install || return 1
+    sed -i '/harfbuzz:/d' $PREFIX/LIBRARIES.txt || return
+    echo "harfbuzz: 2.4.0" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
