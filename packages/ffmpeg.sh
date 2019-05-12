@@ -29,11 +29,15 @@ function install() {
     else
         ARGS+=" --disable-shared"
         # ffmpeg prefer shared libs, so need workarounds 
-        sed -i 's/vorbis_info_init/& -logg/g' configure
-        sed -i 's/vorbis_encode_init/& -lvorbis -logg/g' configure
-        sed -i 's/xmlCheckVersion/& -lz -llzma -liconv/g' configure
+        sed -i 's/vorbis_info_init/& -logg/g' configure || return
+        sed -i 's/vorbis_encode_init/& -lvorbis -logg/g' configure || return
+        sed -i 's/xmlCheckVersion/& -lz -llzma -liconv/g' configure || return
         ARGS+=" --extra-ldflags=-liconv"
         ARGS+=" --extra-ldflags=-lc++"
+    fi
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '/frei0r_pathlist\[\] =/a \\t\t"Resources/frei0r-1/",' libavfilter/vf_frei0r.c || return
     fi
 
     if [ $BUILD_HUGE -eq 1 ]; then 
@@ -69,7 +73,8 @@ function install() {
         ARGS+=" --enable-libopencore-amrnb"
         ARGS+=" --enable-libopencore-amrwb"
         ARGS+=" --enable-libx264"   # h264 encoding
-        ARGS+=" --enable-libx265"    # hevc encoding
+        ARGS+=" --enable-libx265"   # hevc encoding
+        ARGS+=" --enable-frei0r"    # frei0r 
     else
         ARGS+=" --enable-libopenh264"   # h264 encoding
         ARGS+=" --enable-libkvazaar"    # hevc encoding

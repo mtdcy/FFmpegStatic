@@ -161,9 +161,25 @@ if (XCODE)
         PUBLIC_HEADER   DESTINATION     Headers
         )
 
+    # ugly code
+    set (_DEST ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.framework)
+    if (EXISTS ${FFMPEG_PREBUILTS}/lib/frei0r-1)
+        file (GLOB frei0r "${FFMPEG_PREBUILTS}/lib/frei0r-1/*")
+        install(DIRECTORY DESTINATION ${_DEST}/Resources/frei0r-1)
+        foreach (so ${frei0r})
+            get_filename_component(_so ${so} NAME_WE)
+            install(FILES ${so} DESTINATION ${_DEST}/Resources/frei0r-1 RENAME ${_so}.dylib)
+        endforeach()
+    endif()
+
     if (DEFINED FFMPEG_SOURCES)
-        # ugly code
-        install (TARGETS main DESTINATION ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.framework/Resources)
+        install (TARGETS main DESTINATION ${_DEST})
+        file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
+        install (FILES ${_LICENSE} DESTINATION ${_DEST}/Resources)
+        install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION ${_DEST}/Resources)
+        install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION ${_DEST}/Resources)
+        install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${_DEST}/Resources)
+        install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${_DEST}/Resources)
     endif()
 else()
     # libraries headers

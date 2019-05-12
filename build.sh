@@ -127,6 +127,7 @@ mkdir -p $WORKSPACE && cd $WORKSPACE
 if [ $BUILD_GPL -eq 1 ]; then 
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x264.sh     # h264
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x265.sh      # h265
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/frei0r.sh      # frei0r 
 else
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openh264.sh     # h264
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/kvazaar.sh      # h265
