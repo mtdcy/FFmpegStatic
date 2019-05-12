@@ -22,6 +22,7 @@ function install() {
     # FFmpeg - GPL or LGPL
     ARGS="--prefix=$PREFIX --enable-static --enable-rpath --enable-pthreads --enable-hardcoded-tables"
     ARGS+=" --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include"
+    ARGS+=" --enable-nonfree"
     #ARGS+=" --pkg-config-flags=--static"
     if [ $BUILD_SHARED -eq 1 ]; then
         ARGS+=" --enable-shared"
@@ -32,6 +33,7 @@ function install() {
         sed -i 's/vorbis_encode_init/& -lvorbis -logg/g' configure
         sed -i 's/xmlCheckVersion/& -lz -llzma -liconv/g' configure
         ARGS+=" --extra-ldflags=-liconv"
+        ARGS+=" --extra-ldflags=-lc++"
     fi
 
     if [ $BUILD_HUGE -eq 1 ]; then 
@@ -59,8 +61,6 @@ function install() {
     ARGS+=" --enable-libopus"       # opus encoding & decoding
     ARGS+=" --enable-libvpx"        # vp8 & vp9 encoding & decoding
     ARGS+=" --enable-libtheora"     # theora encoding 
-    ARGS+=" --enable-libopenh264"   # h264 encoding
-    ARGS+=" --enable-libkvazaar"    # hevc encoding
     ARGS+=" --enable-libopenjpeg"   # jpeg 2000 encoding & decoding
     ARGS+=" --enable-libwebp"       # webp encoding
     #ARGS+=" --enable-libass"       # FIXME
@@ -68,6 +68,11 @@ function install() {
         ARGS+=" --enable-gpl --enable-version3"
         ARGS+=" --enable-libopencore-amrnb"
         ARGS+=" --enable-libopencore-amrwb"
+        ARGS+=" --enable-libx264"   # h264 encoding
+        ARGS+=" --enable-libx265"    # hevc encoding
+    else
+        ARGS+=" --enable-libopenh264"   # h264 encoding
+        ARGS+=" --enable-libkvazaar"    # hevc encoding
     fi
     # platform hw accel
     # https://trac.ffmpeg.org/wiki/HWAccelIntro
@@ -80,6 +85,8 @@ function install() {
         ARGS+=" --enable-opencl"
         ARGS+=" --enable-opengl"
     fi
+    # for test
+    ARGS+=" --samples=fate-suite/"
     info "ARGS: $ARGS"
 
     ./configure $ARGS || return 1

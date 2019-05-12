@@ -8,6 +8,7 @@ endif()
 if (NOT DEFINED FFMPEG_SOURCES)
     message(STATUS " FFMPEG_SOURCES is not set")
 endif()
+option(WITH_EASY    "FFmpeg easy use interface"     ON)
 
 # macro for import local static library
 macro (import_static_prebuilt library) 
@@ -17,7 +18,7 @@ macro (import_static_prebuilt library)
         NO_DEFAULT_PATH
         )
     if (${LIB_${library}} STREQUAL LIB_${library}-NOTFOUND) 
-        message (FATAL_ERROR ": Library ${library} not found in ${FFMPEG_PREBUILTS}/lib")
+        message (STATUS ": Library ${library} not found in ${FFMPEG_PREBUILTS}/lib")
     else()
         message (STATIC ": Library ${library} found at ${LIB_${library}}")
     endif()
@@ -40,17 +41,20 @@ endif()
 
 set (CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set (FFMPEG_LIBS avutil avcodec avformat avfilter swresample swscale avdevice)
+set (FFMPEG_LIBS avutil avcodec avformat avfilter swresample swscale avdevice postproc)
 set (FFMPEG_DEP_LIBS 
     z bz2 lzma iconv xml2
-    fdk-aac mp3lame ogg vorbis vorbisenc opus 
-    webpmux webp theoraenc theoradec openh264 kvazaar vpx
+    fdk-aac mp3lame ogg vorbis vorbisenc opus opencore-amrnb opencore-amrwb
+    webpmux webp theoraenc theoradec openh264 kvazaar vpx x264 x265
     openjp2 
     soxr)
 
 foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS}) 
     message(STATUS ": import ${LIB}")
     import_static_prebuilt(${LIB})
+    if (EXISTS ${LIB_${LIB}})
+        list(APPEND IMPORTED_LIBS ${LIB_${LIB}})
+    endif()
 endforeach()
 
 # headers
@@ -75,9 +79,9 @@ add_library(${PROJECT_NAME} SHARED stub.cpp ${FFMPEG_HEADERS} ${PRIVATE_HEADERS}
 # include and links
 include_directories(${FFMPEG_PREBUILTS}/include)
 if (CMAKE_COMPILER_IS_GNUCC)
-    target_link_libraries(${PROJECT_NAME} -Wl,--whole-archive -Wl,--start-group ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS} -Wl,--end-group)
+    target_link_libraries(${PROJECT_NAME} -Wl,--whole-archive -Wl,--start-group ${IMPORTED_LIBS} -Wl,--end-group)
 else()
-    target_link_libraries(${PROJECT_NAME} ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS})
+    target_link_libraries(${PROJECT_NAME} ${IMPORTED_LIBS})
 endif()
 
 # control visibility of symbols
@@ -125,6 +129,13 @@ if (DEFINED FFMPEG_SOURCES)
     include_directories (${FFMPEG_SOURCES})
     include_directories (${FFMPEG_SOURCES}/fftools)
     target_link_libraries(main ${PROJECT_NAME})
+endif()
+
+if (WITH_EASY) 
+    add_executable(easy easy.cpp)
+    find_library (ABE NAMES ABE PATHS ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
+    message("ABE: ${ABE}")
+    target_link_libraries(easy ${ABE})
 endif()
 
 ##############################################################################

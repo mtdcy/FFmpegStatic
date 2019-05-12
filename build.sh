@@ -27,27 +27,32 @@ echo "SOURCE: $SOURCE"
 echo "WORKSPACE: $WORKSPACE"
 pause "Please check build options..."
 
-CC=`which cc`
-CXX=`which c++`
-AR=`which ar`
-AS=`which as`
-LD=`which ld`
-RANLIB=`which ranlib`
-STRIP=`which strip`
-MAKE=`which make`
-PKG_CONFIG=`which pkg-config`
-SYSROOT=/
 if [[ "$OSTYPE" == "darwin"* ]]; then
     CC="`xcrun --find cc` -isysroot `xcrun --show-sdk-path`"
     CXX="`xcrun --find c++` -isysroot `xcrun --show-sdk-path`"
     AR=`xcrun --find ar`
     AS=`xcrun --find as`
+    NASM=`xcrun --find nasm`
+    YASM=`xcrun --find yasm`
     LD=`xcrun --find ld`
     RANLIB=`xcrun --find ranlib`
     STRIP=`xcrun --find strip`
     MAKE=`xcrun --find make`
     PKG_CONFIG=`xcrun --find pkg-config`
     SYSROOT=`xcrun --show-sdk-path`
+else
+    CC=`which cc`
+    CXX=`which c++`
+    AR=`which ar`
+    AS=`which as`
+    NASM=`which nasm`
+    YASM=`which yasm`
+    LD=`which ld`
+    RANLIB=`which ranlib`
+    STRIP=`which strip`
+    MAKE=`which make`
+    PKG_CONFIG=`which pkg-config`
+    SYSROOT=/
 fi
 
 export CC="$CC"
@@ -55,6 +60,8 @@ export CXX="$CXX"
 export CPP="$CC -E"
 export AR=$AR
 export AS=$AS
+export NASM=$NASM
+export YASM=$YASM 
 export LD=$LD
 export RANLIB=$RANLIB
 export STRIP=$STRIP
@@ -75,6 +82,8 @@ echo "CXX: $CXX"
 echo "CPP: $CPP"
 echo "AR: $AR"
 echo "AS: $AS"
+echo "NASM: $NASM"
+echo "YASM: $YASM"
 echo "LD: $LD"
 echo "SYSROOT: $SYSROOT"
 echo "PREFIX: $PREFIX"
@@ -115,8 +124,13 @@ mkdir -p $WORKSPACE && cd $WORKSPACE
 # video libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/theora.sh       # theora
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/vpx.sh          # vp8 & vp9
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openh264.sh     # h264
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/kvazaar.sh      # h265
+if [ $BUILD_GPL -eq 1 ]; then 
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x264.sh     # h264
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x265.sh      # h265
+else
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openh264.sh     # h264
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/kvazaar.sh      # h265
+fi
 
 # image libs
 # FIXME: find out the right dependency between jpeg & png & webp & tiff
