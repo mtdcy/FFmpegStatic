@@ -8,6 +8,7 @@ source $SOURCE/packages/cbox.sh
 # global options
 export BUILD_HUGE=${BUILD_HUGE:=1}
 export BUILD_GPL=${BUILD_GPL:=0}
+export BUILD_NONFREE=${BUILD_NONFREE:=0}
 export BUILD_SHARED=${BUILD_SHARED:=0}
 export BUILD_DEMUXER=${BUILD_DEMUXER:=1}
 export BUILD_MUXER=${BUILD_MUXER:=${BUILD_HUGE}}
@@ -22,6 +23,7 @@ BUILD_DEPS=${BUILD_DEPS:=1}
 echo "BUILD_DEPS: $BUILD_DEPS"
 echo "BUILD_HUGE: $BUILD_HUGE"
 echo "BUILD_GPL: $BUILD_GPL"
+echo "BUILD_NONFREE: $BUILD_NONFREE"
 echo "NJOBS: $NJOBS"
 echo "SOURCE: $SOURCE"
 echo "WORKSPACE: $WORKSPACE"
@@ -119,20 +121,20 @@ touch $PREFIX/LIBRARIES.txt
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/lame.sh         # mp3
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/ogg.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/vorbis.sh       # vorbis
-[ $BUILD_DEPS -eq 1 -a $BUILD_GPL -eq 1 ] && build_package $SOURCE/packages/amr.sh 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/amr.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/opus.sh 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/aac.sh          # aac
+[ $BUILD_DEPS -eq 1 -a $BUILD_NONFREE -eq 1 ] && build_package $SOURCE/packages/fdk-aac.sh  # aac
 
 # video libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/theora.sh       # theora
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/vpx.sh          # vp8 & vp9
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openh264.sh     # h264
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/kvazaar.sh      # h265
 if [ $BUILD_GPL -eq 1 ]; then 
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x264.sh     # h264
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x265.sh      # h265
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/frei0r.sh      # frei0r 
-else
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openh264.sh     # h264
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/kvazaar.sh      # h265
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x265.sh     # h265
+    [ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/packages/xvidcore.sh # xvid
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/frei0r.sh   # frei0r 
 fi
 
 # image libs

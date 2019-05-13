@@ -20,10 +20,8 @@ S_ENCODERS=""
 function install() {
     export FFMPEG_SOURCES=`pwd`
     # FFmpeg - GPL or LGPL
-    ARGS="--prefix=$PREFIX --enable-static --enable-rpath --enable-pthreads --enable-hardcoded-tables"
+    ARGS="--prefix=$PREFIX --enable-static --enable-rpath --enable-hardcoded-tables"
     ARGS+=" --extra-ldflags=-L$PREFIX/lib --extra-cflags=-I$PREFIX/include"
-    ARGS+=" --enable-nonfree"
-    #ARGS+=" --pkg-config-flags=--static"
     if [ $BUILD_SHARED -eq 1 ]; then
         ARGS+=" --enable-shared"
     else
@@ -48,32 +46,36 @@ function install() {
 
     # external libraries
     ARGS+=" --disable-autodetect"   # manual control external libraries
-    #ARGS+=" --enable-openssl"       # FIXME: always using system openssl
+    ARGS+=" --enable-version3"      # LGPL 3.0
+    #ARGS+=" --enable-openssl"      # FIXME: always using system openssl
     ARGS+=" --enable-zlib"
     ARGS+=" --enable-bzlib"
     ARGS+=" --enable-lzma"
     ARGS+=" --enable-iconv"
     ARGS+=" --enable-libxml2"       # xml2 parser for dash demuxing
     ARGS+=" --enable-libsoxr"       # audio resampling
+    ARGS+=" --enable-libopencore-amrnb"
+    ARGS+=" --enable-libopencore-amrwb"
     ARGS+=" --enable-libmp3lame"    # mp3 encoding
-    ARGS+=" --enable-libfdk-aac"    # aac encoding
     ARGS+=" --enable-libvorbis"     # vorbis encoding & decoding
     ARGS+=" --enable-libopus"       # opus encoding & decoding
     ARGS+=" --enable-libvpx"        # vp8 & vp9 encoding & decoding
     ARGS+=" --enable-libtheora"     # theora encoding 
     ARGS+=" --enable-libopenjpeg"   # jpeg 2000 encoding & decoding
     ARGS+=" --enable-libwebp"       # webp encoding
+    ARGS+=" --enable-libopenh264"   # h264 encoding
+    ARGS+=" --enable-libkvazaar"    # hevc encoding
     #ARGS+=" --enable-libass"       # FIXME
     if [ $BUILD_GPL -eq 1 ]; then
-        ARGS+=" --enable-gpl --enable-version3"
-        ARGS+=" --enable-libopencore-amrnb"
-        ARGS+=" --enable-libopencore-amrwb"
+        ARGS+=" --enable-gpl"       # GPL 2.x & 3.0
         ARGS+=" --enable-libx264"   # h264 encoding
         ARGS+=" --enable-libx265"   # hevc encoding
+        ARGS+=" --enable-libxvid"   # mpeg4 encoding
         ARGS+=" --enable-frei0r"    # frei0r 
-    else
-        ARGS+=" --enable-libopenh264"   # h264 encoding
-        ARGS+=" --enable-libkvazaar"    # hevc encoding
+    fi
+    if [ $BUILD_NONFREE -eq 1 ]; then
+        ARGS+=" --enable-nonfree"
+        ARGS+=" --enable-libfdk-aac"    # aac encoding
     fi
     # platform hw accel
     # https://trac.ffmpeg.org/wiki/HWAccelIntro
@@ -83,9 +85,9 @@ function install() {
         ARGS+=" --enable-coreimage"
         ARGS+=" --enable-audiotoolbox"
         ARGS+=" --enable-videotoolbox"
+        ARGS+=" --enable-securetransport"   # TLS
         ARGS+=" --enable-opencl"
         ARGS+=" --enable-opengl"
-        ARGS+=" --enable-securetransport"   # openssl
     fi
     # for test
     ARGS+=" --samples=fate-suite/"
