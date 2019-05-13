@@ -42,10 +42,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     STRIP=`xcrun --find strip`
     MAKE=`xcrun --find make`
     PKG_CONFIG=`xcrun --find pkg-config`
-    SYSROOT=`xcrun --show-sdk-path`
 else
-    CC=`which cc`
-    CXX=`which c++`
+    CC=`which gcc`
+    CXX=`which g++`
     AR=`which ar`
     AS=`which as`
     NASM=`which nasm`
@@ -55,47 +54,46 @@ else
     STRIP=`which strip`
     MAKE=`which make`
     PKG_CONFIG=`which pkg-config`
-    SYSROOT=/
+    if [[ "$OSTYPE" == "msys" ]]; then
+        # using MSYS make which using shell to execute its command
+        # for those who prefer windows cmd, switch to mingw32-make 
+        # MAKE=`which mingw32-make`
+        echo "msys"
+    fi
 fi
 
+export PREFIX=$WORKSPACE/$OSTYPE
 export CC="$CC"
-export CXX="$CXX"
+export CFLAGS=-I$PREFIX/include
 export CPP="$CC -E"
+export CPPFLAGS=
+export CXX="$CXX"
+export CXXFLAGS=-I$PREFIX/include 
+export LD=$LD
+export LDFLAGS=-L$PREFIX/lib
+export PKG_CONFIG=$PKG_CONFIG
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 export AR=$AR
 export AS=$AS
 export NASM=$NASM
 export YASM=$YASM 
-export LD=$LD
 export RANLIB=$RANLIB
 export STRIP=$STRIP
 export MAKE=$MAKE
-export PKG_CONFIG=$PKG_CONFIG
-export SYSROOT=$SYSROOT
-export PREFIX=$WORKSPACE/$OSTYPE
-export CFLAGS=-I$PREFIX/include
-export CXXFLAGS=-I$PREFIX/include 
-export LDFLAGS=-L$PREFIX/lib
-export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
+# for run test
+export LD_LIBRARY_PATH=$PREFIX/lib
 
-# https://cmake.org/cmake/help/v3.12/manual/cmake-env-variables.7.html
-export CMAKE_ARGS=" -DCMAKE_MAKE=$MAKE"
-
-echo "CC: $CC"
-echo "CXX: $CXX"
-echo "CPP: $CPP"
+echo "PREFIX: $PREFIX"
+echo "CC: $CC CFLAGS: $CFLAGS"
+echo "CPP: $CPP CPPFLAGS: $CPPFLAGS"
+echo "CXX: $CXX CXXFLAGS: $CXXFLAGS"
+echo "LD: $LD LDFLAGS: $LDFLAGS"
+echo "PKG_CONFIG: $PKG_CONFIG PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
 echo "AR: $AR"
 echo "AS: $AS"
 echo "NASM: $NASM"
 echo "YASM: $YASM"
-echo "LD: $LD"
-echo "SYSROOT: $SYSROOT"
-echo "PREFIX: $PREFIX"
-echo "CFLAGS: $CFLAGS"
-echo "CXXFLAGS: $CXXFLAGS"
-echo "LDFLAGS: $LDFLAGS"
 echo "MAKE: $MAKE"
-echo "PKG_CONFIG: $PKG_CONFIG"
-echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
 pause "Please check compiler..."
 
 function build_package() {
@@ -109,10 +107,10 @@ mkdir -p $PREFIX
 touch $PREFIX/LIBRARIES.txt 
 
 # basic libs
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/iconv.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/zlib.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/bzip2.sh
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/lzma.sh
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/iconv.sh 
 
 # demuxers & muxers
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/xml2.sh 

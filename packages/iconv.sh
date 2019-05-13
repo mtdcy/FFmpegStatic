@@ -1,5 +1,5 @@
 #!/bin/bash
-# usage: zlib.sh <install_prefix>
+# 
 
 SOURCE=`dirname $0`
 source $SOURCE/cbox.sh
@@ -17,17 +17,18 @@ function install() {
 
     info "libiconv: ./configure $ARGS"
     ./configure $ARGS || return 1
-    $MAKE -j$NJOBS || return 1
-    $MAKE install || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then 
         $PREFIX/bin/iconv --help || return
     fi
+
     sed -i '/libiconv:/d' $PREFIX/LIBRARIES.txt || return
     echo "libiconv: 1.15" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libiconv-* &&
+cd libiconv-*/ &&
 install || { error "build iconv failed"; exit 1; }
 

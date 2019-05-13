@@ -18,18 +18,19 @@ function install() {
 
     info "libpng: ./configure $ARGS"
     ./configure $ARGS || return 1
-    $MAKE -j$NJOBS || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then
        $MAKE test || return 1      # very slow
     fi
-    $MAKE install || return 1
+
     sed -i '/libpng:/d' $PREFIX/LIBRARIES.txt || return
     echo "libpng: 1.6.37" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libpng-* &&
+cd libpng-*/ &&
 install || { error "build png failed"; exit 1; }
 
 

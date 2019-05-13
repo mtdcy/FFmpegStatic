@@ -19,9 +19,13 @@ function install() {
     fi
 
     info "x265: cmake $ARGS source"
-    cmake $ARGS source || return 
-    $MAKE -j$NJOBS || return 1
-    $MAKE install || return 1
+    if [[ "$OSTYPE" == "msys" ]]; then
+        cmake -G"MSYS Makefiles" $ARGS source || return 
+    else
+        cmake $ARGS source || return 
+    fi
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then
         $PREFIX/bin/x265 -V || return
     fi
@@ -31,7 +35,7 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd x265* &&
+cd x265*/ &&
 install || { error "build x265 failed"; exit 1; }
 
 

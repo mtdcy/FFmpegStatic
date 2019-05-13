@@ -16,8 +16,8 @@ function install() {
 
     info "x264: ./configure $ARGS"
     AS=$NASM ./configure $ARGS || return 1
-    $MAKE -j$NJOBS || return 1
-    $MAKE install || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then
         cat > test.c <<-'EOF'
 #include <stdint.h>
@@ -31,8 +31,8 @@ int main()
     return 0;
 }
 EOF
-        $CC $CFLAGS $LDFLAGS test.c -lx264 || return 
-        ./a.out || return
+        $CC $CFLAGS $LDFLAGS test.c -lx264 -o test || return 
+        ./test || return
         $PREFIX/bin/x264 -V || return
     fi
     sed -i '/x264:/d' $PREFIX/LIBRARIES.txt || return

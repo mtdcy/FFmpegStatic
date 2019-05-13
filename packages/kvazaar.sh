@@ -18,8 +18,8 @@ function install() {
 
     info "kvazaar: ./configure $ARGS"
     ./configure $ARGS || return 1
-    $MAKE -j$NJOBS || return 1
-    $MAKE install || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then
         $PREFIX/bin/kvazaar --help || return
     fi
@@ -29,5 +29,5 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd kvazaar-* &&
+cd kvazaar-*/ &&
 install || { error "build kvazaar failed"; exit 1; }

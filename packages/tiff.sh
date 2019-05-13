@@ -12,6 +12,7 @@ function install() {
     ARGS="--prefix=$PREFIX --disable-debug --enable-rpath --enable-static --disable-webp"
     ARGS+=" --enable-lzma"
     ARGS+=" --disable-webp"     # loop dependency between tiff & webp
+    ARGS+=" --disable-zstd"
     if [ $BUILD_SHARED -eq 1 ]; then
         ARGS+=" --enable-shared"
     else
@@ -20,8 +21,8 @@ function install() {
 
     info "libtiff: ./configure $ARGS"
     ./configure $ARGS || return 1
-    $MAKE -j$NJOBS || return 1
-    $MAKE install || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then
         cat > test.c <<-'EOF'
 #include <tiffio.h>
@@ -33,8 +34,10 @@ int main(int argc, char* argv[])
   return 0;
 }
 EOF
-        $CC $CFLAGS $LDFLAGS test.c -ltiff -ljpeg -llzma -lz || return
-        ./a.out test/images/lzw-single-strip.tiff || return
+        $CC $CFLAGS $LDFLAGS test.c -ltiff -ljpeg -llzma -lz -o out || return
+        if [[ "$OSTYPE" != "msys" ]]; then
+            ./out test/images/lzw-single-strip.tiff || return
+        fi
     fi
     sed -i '/libtiff:/d' $PREFIX/LIBRARIES.txt || return
     echo "libtiff: 4.0.10" >> $PREFIX/LIBRARIES.txt || return
@@ -42,6 +45,6 @@ EOF
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd tiff-* &&
+cd tiff-*/ &&
 install || { error "build tiff failed"; exit 1; }
 

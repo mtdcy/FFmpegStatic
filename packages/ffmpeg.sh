@@ -30,7 +30,6 @@ function install() {
         sed -i 's/vorbis_info_init/& -logg/g' configure || return
         sed -i 's/vorbis_encode_init/& -lvorbis -logg/g' configure || return
         sed -i 's/xmlCheckVersion/& -lz -llzma -liconv/g' configure || return
-        ARGS+=" --extra-ldflags=-liconv"
         ARGS+=" --extra-ldflags=-lc++"
     fi
 
@@ -45,7 +44,9 @@ function install() {
     fi
 
     # external libraries
-    ARGS+=" --disable-autodetect"   # manual control external libraries
+    #ARGS+=" --disable-autodetect"   # manual control external libraries
+    # after disable-autodetect, there will be some library link error
+    ARGS+=" --extra-ldflags=-liconv"
     ARGS+=" --enable-version3"      # LGPL 3.0
     #ARGS+=" --enable-openssl"      # FIXME: always using system openssl
     ARGS+=" --enable-zlib"
@@ -88,6 +89,10 @@ function install() {
         ARGS+=" --enable-securetransport"   # TLS
         ARGS+=" --enable-opencl"
         ARGS+=" --enable-opengl"
+    elif [[ "$OSTYPE" == "msys" ]]; then
+        #ARGS+=" --enable-opencl"
+        ARGS+=" --enable-d3d11va"
+        ARGS+=" --enable-dxva2"
     fi
     # for test
     ARGS+=" --samples=fate-suite/"
@@ -110,6 +115,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd ffmpeg-* &&
+cd ffmpeg-*/ &&
 install || { error "build ffmpeg failed"; exit 1; }
 

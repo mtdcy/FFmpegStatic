@@ -1,5 +1,5 @@
 #!/bin/bash
-# usage: zlib.sh <install_prefix>
+# 
 
 SOURCE=`dirname $0`
 source $SOURCE/cbox.sh
@@ -9,6 +9,8 @@ sha256=3313fd2a95f43d88e44264e6b015e7d03053e681860b0d5d3f9baca79c57b7bf
 
 function install() {
     ARGS="--prefix=$PREFIX --disable-debug --enable-static"
+    # there is a option about iconv, but no code use it
+    #ARGS+=" --with-libiconv-prefix=$PREFIX"
     if [ $BUILD_SHARED -eq 1 ]; then
         ARGS+=" --enable-shared"
     else
@@ -18,17 +20,17 @@ function install() {
     info "xz: ./configure $ARGS"
     ./configure $ARGS || return 1
     $MAKE clean
-    $MAKE -j$NJOBS || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then
        $MAKE check || return 1
     fi
-    $MAKE install || return 1
     sed -i '/xz:/d' $PREFIX/LIBRARIES.txt || return
     echo "xz: 5.2.4" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd xz-* &&
+cd xz-*/ &&
 install || { error "build lzma failed"; exit 1; }
 

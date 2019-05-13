@@ -12,6 +12,7 @@ function install() {
     ARGS="--prefix=$PREFIX --disable-debug --enable-static"
     # theora is in bad structure, these targets may failed
     ARGS+=" --disable-examples --disable-oggtest --disable-vorbistest"
+    ARGS+=" --with-ogg=$PREFIX --with-vorbis=$PREFIX"
     if [ $BUILD_SHARED -eq 1 ]; then
         ARGS+=" --enable-shared"
     else
@@ -20,17 +21,18 @@ function install() {
 
     info "libtheora: ./configure $ARGS"
     ./configure $ARGS || return 1
-    $MAKE -j$NJOBS || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then 
         $MAKE check || return 1
     fi
-    $MAKE install || return 1
+
     sed -i '/libtheora:/d' $PREFIX/LIBRARIES.txt || return
     echo "libtheora: 1.1.1" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libtheora-* &&
+cd libtheora-*/ &&
 install || { error "build theora failed"; exit 1; }
 

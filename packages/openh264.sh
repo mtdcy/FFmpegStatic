@@ -17,6 +17,7 @@ function install() {
     else
         PREFIX=$PREFIX $MAKE -j$NJOBS install-static || return 1
     fi
+
     if [ $BUILD_TEST -eq 1 ]; then
         cat > test.c <<-'EOF'
 #include <wels/codec_api.h>
@@ -27,16 +28,22 @@ int main() {
     return 0;
 }
 EOF
-        $CC $CFLAGS $LDFLAGS test.c -lopenh264 -lc++ || return
-        ./a.out || return
+        if [[ "$OSTYPE" == "msys" ]]; then
+            $CC $CFLAGS $LDFLAGS test.c -lopenh264 -lstdc++ || return
+            ./a.exe || return
+        else
+            $CC $CFLAGS $LDFLAGS test.c -lopenh264 -lc++ || return
+            ./a.out || return
+        fi
     fi
+
     sed -i '/openh264:/d' $PREFIX/LIBRARIES.txt || return
     echo "openh264: 1.8.0" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 openh264-`basename $url` &&
 extract openh264-`basename $url` && 
-cd openh264-* &&
+cd openh264-*/ &&
 install || { error "build openh264 failed"; exit 1; }
 
 

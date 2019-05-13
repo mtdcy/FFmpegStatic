@@ -12,13 +12,14 @@ function install() {
     sed -i '/AR=ar/d' Makefile
     sed -i '/RANLIB=ranlib/d' Makefile
     sed -i '/LDFLAGS=/d' Makefile
+    sed -i '/PREFIX=/d' Makefile
 
-    info "bzip2: $MAKE..."
-    $MAKE -j$NJOBS || return 1
+    info "bzip2: $MAKE -j$NJOBS install"
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then 
         $MAKE test || return
     fi
-    $MAKE install PREFIX=$PREFIX || return 1
 
     sed -i '/bzip2:/d' $PREFIX/LIBRARIES.txt || return
     echo "bzip2: 1.0.6" >> $PREFIX/LIBRARIES.txt || return
@@ -26,6 +27,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd bzip2-* &&
+cd bzip2-*/ &&
 install || { error "build bzip2 failed"; exit 1; }
 

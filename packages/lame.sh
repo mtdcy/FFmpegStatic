@@ -14,7 +14,7 @@ function install() {
     # https://sourceforge.net/p/lame/mailman/message/36081038/
     sed -i '/lame_init_old/d' include/libmp3lame.sym
 
-    ARGS="--prefix=$PREFIX --disable-debug --enable-nasm --enable-static"
+    ARGS="--prefix=$PREFIX --disable-debug --disable-frontend --enable-nasm --enable-static"
     if [ $BUILD_SHARED -eq 1 ]; then
         ARGS+=" --enable-shared"
     else
@@ -23,20 +23,18 @@ function install() {
 
     info "lame: ./configure $ARGS"
     ./configure $ARGS || return 1
-    $MAKE -j$NJOBS || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then
         $MAKE test || return 1
     fi
-    $MAKE install || return 1
-    if [ $BUILD_TEST -eq 1 ]; then
-        $PREFIX/bin/lame --license || return
-    fi
+
     sed -i '/lame:/d' $PREFIX/LIBRARIES.txt || return
     echo "lame: 3.100" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` &&
-cd lame-* && 
+cd lame-*/ && 
 install || { error "build lame failed"; exit 1; }
 

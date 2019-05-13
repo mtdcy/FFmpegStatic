@@ -27,6 +27,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd harfbuzz-* &&
+cd harfbuzz-*/ &&
 install || { error "build harfbuzz failed"; exit 1; }
 

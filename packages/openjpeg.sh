@@ -16,35 +16,26 @@ function install() {
     else
         ARGS+=" -DBUILD_SHARED_LIBS=OFF"
     fi
-    rm -rf build && mkdir build && cd build
+
+    rm -rf tmp
+    mkdir -p tmp && cd tmp
 
     info "openjpeg: cmake $ARGS .."
-    cmake $ARGS .. || return 1
-    $MAKE -j$NJOBS || return 1
-    $MAKE install || return 1
-    if [ $BUILD_TEST -eq 1 ]; then 
-        cat > test.c <<-'EOF'
-#include <openjpeg-2.3/openjpeg.h>
-int main () {
-  opj_image_cmptparm_t cmptparm;
-  const OPJ_COLOR_SPACE color_space = OPJ_CLRSPC_GRAY;
-  opj_image_t *image;
-  image = opj_image_create(1, &cmptparm, color_space);
-  opj_image_destroy(image);
-  return 0;
-}
-EOF
-        $CC $CFLAGS $LDFLAGS test.c -lopenjp2 -o test || return 
-        ./test || return
+    if [[ "$OSTYPE" == "msys" ]]; then
+        cmake -G"MSYS Makefiles" $ARGS .. || return
+    else
+        cmake $ARGS .. || return 1
     fi
+    $MAKE -j$NJOBS install || return 1
     cd -
+
     sed -i '/openjpeg:/d' $PREFIX/LIBRARIES.txt || return
     echo "openjpeg: 2.3.1" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 openjpeg-`basename $url` &&
 extract openjpeg-`basename $url` && 
-cd openjpeg-* &&
+cd openjpeg-*/ &&
 install || { error "build openjpeg failed"; exit 1; }
 
 

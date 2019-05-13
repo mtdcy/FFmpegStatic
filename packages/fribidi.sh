@@ -35,6 +35,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd fribidi-* &&
+cd fribidi-*/ &&
 install || { error "build fribidi failed"; exit 1; }
 

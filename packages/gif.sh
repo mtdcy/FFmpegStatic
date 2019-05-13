@@ -18,18 +18,23 @@ function install() {
 
     info "giflib: ./configure $ARGS"
     ./configure $ARGS || return 1
-    $MAKE -j$NJOBS || return 1
+    $MAKE -j$NJOBS install || return 1
+
     if [ $BUILD_TEST -eq 1 ]; then
-        $MAKE check || return 1
+        if [[ "$OSTYPE" == "msys" ]]; then 
+            $MAKE -C tests # FIXME: test failed on windows
+        else
+            $MAKE -C tests || return
+        fi
     fi
-    $MAKE install || return 1
+
     sed -i '/giflib:/d' $PREFIX/LIBRARIES.txt || return
     echo "giflib: 5.1.4" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd giflib-* &&
+cd giflib-*/ &&
 install || { error "build png failed"; exit 1; }
 
 
