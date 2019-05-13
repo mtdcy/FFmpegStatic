@@ -22,6 +22,21 @@ function install() {
     cmake $ARGS .. || return 1
     $MAKE -j$NJOBS || return 1
     $MAKE install || return 1
+    if [ $BUILD_TEST -eq 1 ]; then 
+        cat > test.c <<-'EOF'
+#include <openjpeg-2.3/openjpeg.h>
+int main () {
+  opj_image_cmptparm_t cmptparm;
+  const OPJ_COLOR_SPACE color_space = OPJ_CLRSPC_GRAY;
+  opj_image_t *image;
+  image = opj_image_create(1, &cmptparm, color_space);
+  opj_image_destroy(image);
+  return 0;
+}
+EOF
+        $CC $CFLAGS $LDFLAGS test.c -lopenjp2 -o test || return 
+        ./test || return
+    fi
     cd -
     sed -i '/openjpeg:/d' $PREFIX/LIBRARIES.txt || return
     echo "openjpeg: 2.3.1" >> $PREFIX/LIBRARIES.txt || return
@@ -29,7 +44,7 @@ function install() {
 
 download $url $sha256 openjpeg-`basename $url` &&
 extract openjpeg-`basename $url` && 
-cd openjpeg-2.3.1 &&
+cd openjpeg-* &&
 install || { error "build openjpeg failed"; exit 1; }
 
 

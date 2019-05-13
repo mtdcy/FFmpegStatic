@@ -19,6 +19,9 @@ function install() {
     info "libvorbis: ./configure $ARGS"
     ./configure $ARGS || return 1
     $MAKE -j$NJOBS || return 1
+    if [ $BUILD_TEST -eq 1 ]; then 
+        $MAKE check || return
+    fi
     $MAKE install || return 1
     sed -i '/libvorbis:/d' $PREFIX/LIBRARIES.txt || return
     echo "libvorbis: 1.3.6" >> $PREFIX/LIBRARIES.txt || return
@@ -26,6 +29,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libvorbis-1.3.6 &&
+cd libvorbis-* &&
 install || { error "build libvorbis failed"; exit 1; }
 

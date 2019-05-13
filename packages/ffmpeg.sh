@@ -110,6 +110,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd ffmpeg-4.1 &&
+cd ffmpeg-* &&
 install || { error "build ffmpeg failed"; exit 1; }
 

@@ -22,13 +22,16 @@ function install() {
     cmake $ARGS source || return 
     $MAKE -j$NJOBS || return 1
     $MAKE install || return 1
+    if [ $BUILD_TEST -eq 1 ]; then
+        $PREFIX/bin/x265 -V || return
+    fi
     sed -i '/x265:/d' $PREFIX/LIBRARIES.txt || return
     echo "x265: 3.0" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd x265_3.0 &&
+cd x265* &&
 install || { error "build x265 failed"; exit 1; }
 
 

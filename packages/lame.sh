@@ -28,12 +28,15 @@ function install() {
         $MAKE test || return 1
     fi
     $MAKE install || return 1
+    if [ $BUILD_TEST -eq 1 ]; then
+        $PREFIX/bin/lame --license || return
+    fi
     sed -i '/lame:/d' $PREFIX/LIBRARIES.txt || return
     echo "lame: 3.100" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` &&
-cd lame-3.100 && 
+cd lame-* && 
 install || { error "build lame failed"; exit 1; }
 

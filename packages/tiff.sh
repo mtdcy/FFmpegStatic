@@ -22,12 +22,26 @@ function install() {
     ./configure $ARGS || return 1
     $MAKE -j$NJOBS || return 1
     $MAKE install || return 1
+    if [ $BUILD_TEST -eq 1 ]; then
+        cat > test.c <<-'EOF'
+#include <tiffio.h>
+int main(int argc, char* argv[])
+{
+  TIFF *out = TIFFOpen(argv[1], "w");
+  TIFFSetField(out, TIFFTAG_IMAGEWIDTH, (uint32) 10);
+  TIFFClose(out);
+  return 0;
+}
+EOF
+        $CC $CFLAGS $LDFLAGS test.c -ltiff -ljpeg -llzma -lz || return
+        ./a.out test/images/lzw-single-strip.tiff || return
+    fi
     sed -i '/libtiff:/d' $PREFIX/LIBRARIES.txt || return
     echo "libtiff: 4.0.10" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd tiff-4.0.10 &&
+cd tiff-* &&
 install || { error "build tiff failed"; exit 1; }
 

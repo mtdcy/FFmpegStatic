@@ -19,6 +19,9 @@ function install() {
     info "libwebp: ./configure $ARGS"
     ./configure $ARGS || return 1
     $MAKE -j$NJOBS || return 1
+    if [ $BUILD_TEST -eq 1 ]; then 
+        $MAKE check || return
+    fi
     $MAKE install || return 1
     sed -i '/libwebp:/d' $PREFIX/LIBRARIES.txt || return
     echo "libwebp: 1.0.2" >> $PREFIX/LIBRARIES.txt || return
@@ -26,7 +29,7 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libwebp-1.0.2 &&
+cd libwebp-* &&
 install || { error "build webp failed"; exit 1; }
 
 

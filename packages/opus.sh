@@ -29,7 +29,7 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd opus-1.3.1 &&
+cd opus-* &&
 install || { error "build libogg failed"; exit 1; }
 
 

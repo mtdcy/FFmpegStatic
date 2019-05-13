@@ -26,5 +26,5 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd opencore-amr-0.1.5 &&
+cd opencore-amr-* &&
 install || { error "build opencore-amr failed"; exit 1; }

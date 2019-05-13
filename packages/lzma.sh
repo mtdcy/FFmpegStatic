@@ -29,6 +29,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd xz-5.2.4 &&
+cd xz-* &&
 install || { error "build lzma failed"; exit 1; }
 

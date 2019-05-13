@@ -29,7 +29,7 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd giflib-5.1.4 &&
+cd giflib-* &&
 install || { error "build png failed"; exit 1; }
 
 

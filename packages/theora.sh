@@ -31,6 +31,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libtheora-1.1.1 &&
+cd libtheora-* &&
 install || { error "build theora failed"; exit 1; }
 

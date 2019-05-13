@@ -27,6 +27,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libass-0.14.0 &&
+cd libass-* &&
 install || { error "build libass failed"; exit 1; }
 

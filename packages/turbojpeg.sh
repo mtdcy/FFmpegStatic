@@ -33,7 +33,7 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libjpeg-turbo-2.0.2 &&
+cd libjpeg-turbo-* &&
 install || { error "build jpeg failed"; exit 1; }
 
 

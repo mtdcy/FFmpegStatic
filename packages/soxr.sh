@@ -35,6 +35,6 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd soxr-0.1.3-Source &&
+cd soxr-* &&
 install || { error "build libsoxr failed"; exit 1; }
 

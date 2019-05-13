@@ -28,5 +28,5 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd fdk-aac-2.0.0 &&
+cd fdk-aac-* &&
 install || { error "build libogg failed"; exit 1; }

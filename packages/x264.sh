@@ -18,6 +18,23 @@ function install() {
     AS=$NASM ./configure $ARGS || return 1
     $MAKE -j$NJOBS || return 1
     $MAKE install || return 1
+    if [ $BUILD_TEST -eq 1 ]; then
+        cat > test.c <<-'EOF'
+#include <stdint.h>
+#include <x264.h>
+int main()
+{
+    x264_picture_t pic;
+    x264_picture_init(&pic);
+    x264_picture_alloc(&pic, 1, 1, 1);
+    x264_picture_clean(&pic);
+    return 0;
+}
+EOF
+        $CC $CFLAGS $LDFLAGS test.c -lx264 || return 
+        ./a.out || return
+        $PREFIX/bin/x264 -V || return
+    fi
     sed -i '/x264:/d' $PREFIX/LIBRARIES.txt || return
     echo "x264: HEAD" >> $PREFIX/LIBRARIES.txt || return
 }

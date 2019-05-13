@@ -29,7 +29,7 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd libpng-1.6.37 &&
+cd libpng-* &&
 install || { error "build png failed"; exit 1; }
 
 

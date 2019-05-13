@@ -32,7 +32,7 @@ int main() {
 }
 EOF
        
-        $CC $CXXFLAGS $LDFLAGS test.cpp -lxvidcore -o test
+        $CXX $CXXFLAGS $LDFLAGS test.cpp -lxvidcore -o test
         ./test || return 
     fi
 

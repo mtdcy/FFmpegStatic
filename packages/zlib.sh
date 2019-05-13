@@ -26,5 +26,5 @@ function install() {
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd zlib-1.2.11 &&
+cd zlib-* &&
 install || { error "build zlib failed"; exit 1; }

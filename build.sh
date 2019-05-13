@@ -24,6 +24,7 @@ echo "BUILD_DEPS: $BUILD_DEPS"
 echo "BUILD_HUGE: $BUILD_HUGE"
 echo "BUILD_GPL: $BUILD_GPL"
 echo "BUILD_NONFREE: $BUILD_NONFREE"
+echo "BUILD_TEST: $BUILD_TEST"
 echo "NJOBS: $NJOBS"
 echo "SOURCE: $SOURCE"
 echo "WORKSPACE: $WORKSPACE"
@@ -133,7 +134,7 @@ touch $PREFIX/LIBRARIES.txt
 if [ $BUILD_GPL -eq 1 ]; then 
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x264.sh     # h264
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x265.sh     # h265
-    [ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/packages/xvidcore.sh # xvid
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/xvidcore.sh # xvid
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/frei0r.sh   # frei0r 
 fi
 

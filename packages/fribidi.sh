@@ -21,12 +21,20 @@ function install() {
     ./configure $ARGS || return 1
     $MAKE -j$NJOBS || return 1
     $MAKE install || return 1
+
+    if [ $BUILD_TEST -eq 1 ]; then
+        input="a _lsimple _RteST_o th_oat"
+        echo $input > test.input
+        output=`$PREFIX/bin/fribidi --charset=CapRTL --test test.input`
+        [[ "${output#*=> }" == "a simple TSet that" ]] || return
+    fi
+
     sed -i '/fribidi:/d' $PREFIX/LIBRARIES.txt || return
     echo "fribidi: 1.0.5" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
 extract `basename $url` && 
-cd fribidi-1.0.5 &&
+cd fribidi-* &&
 install || { error "build fribidi failed"; exit 1; }
 

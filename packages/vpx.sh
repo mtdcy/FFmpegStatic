@@ -34,6 +34,6 @@ function install() {
 
 download $url $sha256 libvpx-`basename $url` &&
 extract libvpx-`basename $url` && 
-cd libvpx-1.8.0 &&
+cd libvpx-* &&
 install || { error "build libvpx failed"; exit 1; }
 
