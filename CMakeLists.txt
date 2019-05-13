@@ -45,7 +45,7 @@ set (FFMPEG_LIBS avutil avcodec avformat avfilter swresample swscale avdevice po
 set (FFMPEG_DEP_LIBS 
     z bz2 lzma iconv xml2
     fdk-aac mp3lame ogg vorbis vorbisenc opus opencore-amrnb opencore-amrwb
-    webpmux webp theoraenc theoradec openh264 kvazaar vpx x264 x265
+    webpmux webp theoraenc theoradec openh264 kvazaar vpx x264 x265 xvidcore
     openjp2 
     soxr)
 
