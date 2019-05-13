@@ -21,6 +21,16 @@ function install() {
     $MAKE -j$NJOBS install || return 1
 
     if [ $BUILD_TEST -eq 1 ]; then
+        cat > test.c <<-'EOF'
+#include <kvazaar.h>
+int main(void) { 
+    kvz_api_get(0);
+    return 0;
+}
+EOF
+        $CC $CFLAGS $LDFLAGS test.c -lkvazaar -o out || return
+        ./out || return
+
         $PREFIX/bin/kvazaar --help || return
     fi
     sed -i '/kvazaar:/d' $PREFIX/LIBRARIES.txt || return

@@ -22,7 +22,7 @@ function install() {
     if [ $BUILD_SHARED -eq 1 ]; then
         PREFIX=$PREFIX $MAKE -j$NJOBS install-shared || return 1
     else
-        PREFIX=$PREFIX AR=$AR $MAKE -j$NJOBS install-static || return 1
+        PREFIX=$PREFIX $MAKE -j$NJOBS install-static || return 1
     fi
 
     if [ $BUILD_TEST -eq 1 ]; then

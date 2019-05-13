@@ -15,6 +15,8 @@ function install() {
         ARGS+=" -DBUILD_SHARED_LIBS=ON"
     else
         ARGS+=" -DBUILD_SHARED_LIBS=OFF"
+        # no applications
+        ARGS+=" -DBUILD_CODEC=OFF"
     fi
 
     rm -rf tmp
@@ -27,6 +29,22 @@ function install() {
         cmake $ARGS .. || return 1
     fi
     $MAKE -j$NJOBS install || return 1
+
+    if [ $BUILD_TEST -eq 1 ]; then
+        cat > test.c <<-'EOF'
+#include <openjpeg-2.3/openjpeg.h>
+int main () {
+  opj_image_cmptparm_t cmptparm;
+  const OPJ_COLOR_SPACE color_space = OPJ_CLRSPC_GRAY;
+  opj_image_t *image;
+  image = opj_image_create(1, &cmptparm, color_space);
+  opj_image_destroy(image);
+  return 0;
+}
+EOF
+        $CC $CFLAGS $LDFLAGS test.c -lopenjp2 -o out || return
+        ./out || return
+    fi
     cd -
 
     sed -i '/openjpeg:/d' $PREFIX/LIBRARIES.txt || return

@@ -30,7 +30,11 @@ function install() {
         sed -i 's/vorbis_info_init/& -logg/g' configure || return
         sed -i 's/vorbis_encode_init/& -lvorbis -logg/g' configure || return
         sed -i 's/xmlCheckVersion/& -lz -llzma -liconv/g' configure || return
-        ARGS+=" --extra-ldflags=-lc++"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            ARGS+=" --extra-ldflags=-lc++"
+        else
+            ARGS+=" --extra-ldflags=-lstdc++"
+        fi
     fi
 
     if [ $BUILD_HUGE -eq 1 ]; then 
