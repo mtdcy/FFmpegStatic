@@ -10,17 +10,23 @@ sha256=e0c24630961195d9bd65aa8d43732469e8248e8918faa942cfb881769d11515e
 
 function install() {
     # alwasy build shared libraries
-    ARGS="-DCMAKE_INSTALL_PREFIX=$PREFIX"
-
-    rm -rf build 
-    mkdir -p build && cd build 
-    info "frei0r: cmake $ARGS .."
+    # both build system has its faults
     if [[ "$OSTYPE" == "msys" ]]; then
+        ARGS="-DCMAKE_INSTALL_PREFIX=$PREFIX"
+        ARGS+="-DCMAKE_MAKE_PROGRAM=$MAKE"
+
+        rm -rf build 
+        mkdir -p build && cd build 
+        info "frei0r: cmake $ARGS .."
         cmake -G"MSYS Makefiles" $ARGS ..
+        $MAKE -j$NJOBS install || return
+        cd -
     else
-        cmake $ARGS ..
+        ARGS="--prefix=$PREFIX --disable-debug --enable-shared"
+        info "frei0r: ./configure $ARGS"
+        ./configure $ARGS || return 1
+        $MAKE -j$NJOBS install || return 1
     fi
-    $MAKE -j$NJOBS install || return
 
     sed -i '/frei0r:/d' $PREFIX/LIBRARIES.txt || return
     echo "frei0r: 1.6.1" >> $PREFIX/LIBRARIES.txt || return
