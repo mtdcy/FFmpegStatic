@@ -1,6 +1,10 @@
 # FFmpegStatic 
 
-Build static [FFmpeg](https://ffmpeg.org/) bundle for MacOS(Xcode) | Windows | Linux. This Project includes:
+Build static [FFmpeg](https://ffmpeg.org/) bundle for MacOS(Xcode) | Windows | Linux. 
+
+Prebuilt bundles can be downloaded from the [Release page](https://github.com/mtdcy/FFmpegStatic/releases)
+
+This Project includes:
 
 - [bash script](build.sh) for creating static libraries of FFmpeg and its dependencies
 - [CMakeLists.txt](CMakeLists.txt) and [stub code](stub.cpp) for creating bundle for different os
