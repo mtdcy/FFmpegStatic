@@ -112,9 +112,6 @@ touch $PREFIX/LIBRARIES.txt
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/bzip2.sh
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/lzma.sh
 
-# demuxers & muxers
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/xml2.sh 
-
 # audio libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/soxr.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/lame.sh         # mp3
@@ -123,6 +120,15 @@ touch $PREFIX/LIBRARIES.txt
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/amr.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/opus.sh 
 [ $BUILD_DEPS -eq 1 -a $BUILD_NONFREE -eq 1 ] && build_package $SOURCE/packages/fdk-aac.sh  # aac
+
+# image libs
+# FIXME: find out the right dependency between jpeg & png & webp & tiff
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/png.sh          # png 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/gif.sh          # gif
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/turbojpeg.sh    # jpeg
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/tiff.sh         # depends on jpeg
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/webp.sh         # depends on jpeg&png&tiff
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openjpeg.sh     # depends on png&tiff
 
 # video libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/theora.sh       # theora
@@ -136,19 +142,13 @@ if [ $BUILD_GPL -eq 1 ]; then
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/frei0r.sh   # frei0r 
 fi
 
-# image libs
-# FIXME: find out the right dependency between jpeg & png & webp & tiff
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/png.sh          # png 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/gif.sh          # gif
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/turbojpeg.sh    # jpeg
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/tiff.sh         # depends on jpeg
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/webp.sh         # depends on jpeg&png&tiff
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openjpeg.sh     # depends on png&tiff
-
 # text libs
 #[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/hurfbuzz.s    # need by libass
 #[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/fribidi.sh    # need by libass
 #[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/ass.sh            
+
+# demuxers & muxers
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/xml2.sh 
 
 build_package $SOURCE/packages/ffmpeg.sh 
 

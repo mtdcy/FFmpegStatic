@@ -4,7 +4,9 @@
 SOURCE=`dirname $0`
 source $SOURCE/cbox.sh
 
-url=https://zlib.net/zlib-1.2.11.tar.gz
+license="zlib"
+version=1.2.11
+url=https://zlib.net/zlib-$version.tar.gz
 sha256=c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1
 
 function install() {
@@ -23,19 +25,28 @@ function install() {
         fi
     else
         ARGS="--prefix=$PREFIX"
-        info "zlib: ./configure $ARGS"
-        ./configure $ARGS || return 1
         if [ $BUILD_SHARED -eq 0 ]; then
             ARGS+=" --static"
         fi
-        $MAKE -j$NJOBS || return 1
-        $MAKE install || return 1
+        info "zlib: ./configure $ARGS"
+        ./configure $ARGS || return 1
+        $MAKE -j$NJOBS install || return 1
     fi
+
     if [ $BUILD_TEST -eq 1 ]; then 
         $MAKE test || return 1
+        cat > a.c <<-'EOF'
+#include <zlib.h>
+int main(void) {
+    zlibVersion();
+    return 0;
+}
+EOF
+        $CC $CFLAGS $LDFLAGS a.c -lz -o out || return
+        ./out || return
     fi
     sed -i '/zlib:/d' $PREFIX/LIBRARIES.txt || return
-    echo "zlib: 1.2.11" >> $PREFIX/LIBRARIES.txt || return
+    echo "zlib: $version $license" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&

@@ -6,7 +6,9 @@
 SOURCE=`dirname $0`
 source $SOURCE/cbox.sh
 
-url=https://sourceforge.net/projects/lame/files/lame/3.100/lame-3.100.tar.gz
+license="LGPL"
+version=3.100
+url=https://sourceforge.net/projects/lame/files/lame/$version/lame-$version.tar.gz
 sha256=ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e
 
 function install() {
@@ -27,10 +29,19 @@ function install() {
 
     if [ $BUILD_TEST -eq 1 ]; then
         $MAKE test || return 1
+        cat > a.c <<-'EOF'
+#include <lame/lame.h>
+int main(void) {
+    lame_init();
+    return 0;
+}
+EOF
+        $CC $CFLAGS $LDFLAGS a.c -lmp3lame -o a || return
+        ./a || return
     fi
 
     sed -i '/lame:/d' $PREFIX/LIBRARIES.txt || return
-    echo "lame: 3.100" >> $PREFIX/LIBRARIES.txt || return
+    echo "lame: $version $license" >> $PREFIX/LIBRARIES.txt || return
 }
 
 download $url $sha256 `basename $url` &&
