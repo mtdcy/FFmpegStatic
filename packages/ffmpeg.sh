@@ -30,11 +30,7 @@ function install() {
         sed -i 's/vorbis_info_init/& -logg/g' configure || return
         sed -i 's/vorbis_encode_init/& -lvorbis -logg/g' configure || return
         sed -i 's/xmlCheckVersion/& -lz -llzma -liconv/g' configure || return
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            ARGS+=" --extra-ldflags=-lc++"
-        else
-            ARGS+=" --extra-ldflags=-lstdc++"
-        fi
+        ARGS+=" --extra-ldflags=-lstdc++"
     fi
 
     if [ $BUILD_HUGE -eq 1 ]; then 
@@ -48,7 +44,7 @@ function install() {
     fi
 
     # external libraries
-    #ARGS+=" --disable-autodetect"   # manual control external libraries
+    ARGS+=" --disable-autodetect"   # manual control external libraries
     # after disable-autodetect, there will be some library link error
     ARGS+=" --extra-ldflags=-liconv"
     ARGS+=" --enable-version3"      # LGPL 3.0
