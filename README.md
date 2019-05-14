@@ -24,6 +24,7 @@ This project includes:
 - using stub loader instead of --whole-archive, @see stub.c.
 - build shared library to check library dependency using commands like 'otool -L path_to_shared_library' or 'ldd path_to_shared_library' or 'objdump -p test.exe | grep DLL'.
 - I don't like GPL, it is not commercial friendly. If you perfer GPL, build libraries using 'BUILD_GPL=1 ./build.sh'
+- usally only one c library inside system, but multi c++ libraries. how to make sure all libraries using the same c++ library ?
 
 ## LICENSE
 
