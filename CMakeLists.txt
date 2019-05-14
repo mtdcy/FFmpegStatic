@@ -12,7 +12,7 @@ endif()
 if (NOT DEFINED FFMPEG_SOURCES)
     message(FATAL_ERROR " FFMPEG_SOURCES is not set")
 endif()
-option(WITH_EASY    "FFmpeg easy use interface"     ON)
+option(WITH_EASY    "FFmpeg easy use interface"     OFF)
 
 # macro for import local static library
 macro (import_static_prebuilt library) 
@@ -148,8 +148,8 @@ if (XCODE)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         FRAMEWORK TRUE
         FRAMEWORK_VERSION A
-        VERSION         "${VERSION_MAJOR}.${VERSION_MINOR}"
-        SOVERSION       "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUILD}"
+        VERSION         "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUILD}"
+        SOVERSION       "${VERSION_MAJOR}.${VERSION_MINOR}"
         PUBLIC_HEADER   "${FFMPEG_HEADERS}"
         MACOSX_FRAMEWORK_IDENTIFIER com.mtdcy.FFmpeg
         MACOSX_FRAMEWORK_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist
@@ -182,19 +182,32 @@ if (XCODE)
     install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${_DEST}/Resources)
     install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${_DEST}/Resources)
 else()
-    # libraries headers
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        SOVERSION       "${VERSION_MAJOR}.${VERSION_MINOR}"
+        VERSION         "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_BUILD}"
+    )
+
+    # Install all things to ${CMAKE_INSTALL_PREFIX}
+    install (TARGETS main DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install (TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+    # Headers
+    install (FILES ${FFMPEG_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX})
     foreach (LIB ${FFMPEG_LIBS})
-        install(DIRECTORY ${FFMPEG_PREBUILTS}/include/lib${LIB} DESTINATION include/FFmpeg FILES_MATCHING PATTERN "*.h")
+        install(DIRECTORY ${FFMPEG_PREBUILTS}/include/lib${LIB} DESTINATION ${CMAKE_INSTALL_PREFIX})
     endforeach()
 
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        PUBLIC_HEADER "${FFMPEG_HEADERS}"
-        )
+    # Resources 
+    if (EXISTS ${FFMPEG_PREBUILTS}/lib/frei0r-1)
+        install (DIRECTORY ${FFMPEG_PREBUILTS}/lib/frei0r-1 DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
+        install (PROGRAMS frei0r.sh DESTINATION ${CMAKE_INSTALL_PREFIX} RENAME frei0r)
+    endif()
 
-    install (TARGETS ${PROJECT_NAME} 
-        PUBLIC_HEADER   DESTINATION     include/FFmpeg
-        RUNTIME         DESTINATION     bin
-        ARCHIVE         DESTINATION     lib
-        LIBRARY         DESTINATION     lib
-        )
+    file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
+    install (FILES ${_LICENSE} DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
+    install (FILES ${FFMPEG_PREBUILTS}/LIBRARIES.txt DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
 endif()
