@@ -1,6 +1,6 @@
 # FFmpegStatic 
 
-Build static [FFmpeg](https://ffmpeg.org/) bundle for MacOS(Xcode) | Windows | Linux. 
+Build static linked [FFmpeg](https://ffmpeg.org/) bundle for MacOS(Xcode) | Windows | Linux. 
 
 Prebuilt bundles can be downloaded from the [Release page](https://github.com/mtdcy/FFmpegStatic/releases)
 
@@ -80,11 +80,6 @@ BUILD_GPL=1 BUILD_NONFREE=1 BUILD_DEPS=1 BUILD_SHARED=1 ./build.sh
 # step 2:
 # build only static 
 BUILD_GPL=1 BUILD_NONFREE=1 BUILD_DEPS=1 BUILD_SHARED=0 ./build.sh
-
-# step 3:
-# build bundle
-cmake -DFFMPEG_PREBUILTS=<...> -DFFMPEG_SOURCES=<...> <path_to_project>
-make
 ```
 
 ## LICENSE

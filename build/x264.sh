@@ -12,15 +12,16 @@ prepare_pkg_source $url $sha256 $SOURCE/packages/`basename $url` && cd x264-*/
 
 ARGS="--prefix=$PREFIX --enable-pic"
 ARGS+=" --disable-avs --disable-swscale --disable-lavf --disable-ffms --disable-gpac --disable-lsmash"
-ARGS+=" --extra-cflags=$CFLAGS --extra-ldflags=$LDFLAGS"
+ARGS+=" --extra-cflags=\"$CFLAGS\" --extra-ldflags=\"$LDFLAGS\""
 if [ $BUILD_SHARED -eq 1 ]; then
     ARGS+=" --enable-shared --disable-static --enable-pic"
 else
     ARGS+=" --disable-shared --enable-static"
 fi
 
-info "x264: ./configure $ARGS"
-AS=$NASM ./configure $ARGS || error "configure failed"
+cmd="AS=$NASM ./configure $ARGS"
+info "x264: $cmd"
+eval $cmd || error "$cmd failed"
 $MAKE -j$NJOBS install || error "make install failed"
 
 if [ $BUILD_TEST -eq 1 ]; then

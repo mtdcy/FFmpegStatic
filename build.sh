@@ -23,36 +23,20 @@ echo "BUILD_DEPS: $BUILD_DEPS"
 echo "NJOBS: $NJOBS"
 pause "Please check build options..."
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    CC="`xcrun --find cc` -isysroot `xcrun --show-sdk-path`"
-    CXX="`xcrun --find c++` -isysroot `xcrun --show-sdk-path`"
-    AR=`xcrun --find ar`
-    AS=`xcrun --find as`
-    NASM=`xcrun --find nasm`
-    YASM=`xcrun --find yasm`
-    LD=`xcrun --find ld`
-    RANLIB=`xcrun --find ranlib`
-    STRIP=`xcrun --find strip`
-    MAKE=`xcrun --find make`
-    PKG_CONFIG=`xcrun --find pkg-config`
-else
-    CC=`which gcc`
-    CXX=`which g++`
-    AR=`which ar`
-    AS=`which as`
-    NASM=`which nasm`
-    YASM=`which yasm`
-    LD=`which ld`
-    RANLIB=`which ranlib`
-    STRIP=`which strip`
-    MAKE=`which make`
-    PKG_CONFIG=`which pkg-config`
-    if [[ "$OSTYPE" == "msys" ]]; then
-        # using MSYS make which using shell to execute its command
-        # for those who prefer windows cmd, switch to mingw32-make 
-        # MAKE=`which mingw32-make`
-        echo "msys"
-    fi
+CC=`which gcc`
+CXX=`which g++`
+AR=`which ar`
+AS=`which as`
+LD=`which ld`
+RANLIB=`which ranlib`
+STRIP=`which strip`
+MAKE=`which make`
+PKG_CONFIG=`which pkg-config`
+if [[ "$OSTYPE" == "msys" ]]; then
+    # using MSYS make which using shell to execute its command
+    # for those who prefer windows cmd, switch to mingw32-make 
+    # MAKE=`which mingw32-make`
+    echo "msys"
 fi
 
 PREFIX=$PWD/$OSTYPE 
@@ -60,14 +44,20 @@ PREFIX=$PWD/$OSTYPE
 
 FLAGS="-g -O2 -DNDEBUG"  # build with debug info
 [[ "$OSTYPE" == "linux"* ]] && FLAGS="$FLAGS -fPIC -DPIC"
+#[[ "$OSTYPE" == "darwin"* ]] && FLAGS="$FLAGS -isysroot `xcrun --show-sdk-path`"
 
-CPP="$CC -E"
 CFLAGS=$FLAGS
 CXXFLAGS=$FLAGS
+CPP="$CC -E"
 CPPFLAGS=-I$PREFIX/include
 LDFLAGS=-L$PREFIX/lib
 [ $BUILD_SHARED -eq 1 ] && LDFLAGS="$LDFLAGS -Wl,-rpath,$PREFIX/lib"
 
+# as
+NASM=`which nasm`
+YASM=`which yasm`
+
+# pkg-config
 PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 LD_LIBRARY_PATH=$PREFIX/lib     # for run test
 
@@ -89,7 +79,7 @@ echo "YASM: $YASM"
 echo "MAKE: $MAKE"
 echo "CMAKE: $CMAKE $CMAKE_COMMON_ARGS"
 
-export PREFIX CC CFLAGS CPP CPPFLAGS CXX CXXFLAGS
+export PREFIX CC CFLAGS CPP CPPFLAGS CXX CXXFLAGS 
 export LD LDFLAGS PKG_CONFIG PKG_CONFIG_PATH 
 export AR AS NASM YASM RANLIB STRIP MAKE 
 export LD_LIBRARY_PATH 
@@ -150,12 +140,17 @@ fi
 
 build_package $SOURCE/build/ffmpeg.sh 
 
-ffmpeg=`cd ffmpeg-*/ && pwd && cd -`
-cmd="cmake -DCMAKE_INSTALL_PREFIX=$PWD/out -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFFMPEG_PREBUILTS=$PREFIX -DFFMPEG_SOURCES=$ffmpeg"
+cd ffmpeg-* && ffmpeg=$PWD && cd -
+cmd="cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFFMPEG_PREBUILTS=$PREFIX -DFFMPEG_SOURCES=$ffmpeg"
+[[ "$OSTYPE" == "darwin"* ]] && cmd="$cmd -DCMAKE_INSTALL_PREFIX=$HOME/Library/Frameworks" || cmd="$cmd -DCMAKE_INSTALL_PREFIX=$PWD/out"
 [[ "$OSTYPE" == "msys" ]] && cmd="$cmd -G\"MSYS Makefiles\""
+[[ "$OSTYPE" == "darwin"* ]] && cmd="$cmd -GXcode"
 cmd="$cmd $SOURCE"
 
+[[ "$OSTYPE" == "darwin"* ]] && cmd="$cmd && xcodebuild -alltargets -config Release" || cmd="$cmd && $MAKE install"
+
 info $cmd
-rm $PWD/out 
+[ -e $PWD/out ] && rm -rf $PWD/out
+[ -e CMakeCache.txt ] && rm CMakeCache.txt
+[[ "$OSTYPE" == "darwin"* ]] && unset LD     # cmake take LD instead CC as C compiler, why?
 eval $cmd
-$MAKE clean && $MAKE install

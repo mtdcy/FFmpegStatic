@@ -15,11 +15,11 @@ endif()
 
 # project settings
 if (APPLE)
-    #set (CMAKE_MACOSX_RPATH TRUE)
+    set (CMAKE_MACOSX_RPATH TRUE)
 endif()
 
 set (CMAKE_INSTALL_RPATH    "./")   # for ffmpeg
-if (APPLE)
+if (XCODE)
     set (CMAKE_XCODE_ATTRIBUTE_SIGN_IDENTITY "macOS Developer")
     #set (CMAKE_XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET 10.8)
 endif()
@@ -62,6 +62,7 @@ endif()
 
 # link apple frameworks
 if (APPLE)
+    # FIXME: using pkg-config
     set (FFMPEG_DEP_FRAMEWORKS 
         Foundation CoreFoundation AVFoundation
         CoreMedia CoreVideo CoreGraphics CoreServices CoreImage 
