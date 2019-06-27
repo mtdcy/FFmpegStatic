@@ -1,0 +1,83 @@
+//  Created by Chen Fang on 2018/12/25.
+//  Copyright © 2018 Chen Fang. All rights reserved.
+//
+
+#ifndef __FFMPEG_HEADERS__
+#define __FFMPEG_HEADERS__
+
+// libavutil need this
+#ifndef __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS
+#endif
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#cmakedefine HAS_libavutil      1
+#cmakedefine HAS_libavcodec     1
+#cmakedefine HAS_libavformat    1
+#cmakedefine HAS_libavfilter    1
+#cmakedefine HAS_libswresample  1
+#cmakedefine HAS_libswscale     1
+#cmakedefine HAS_libavdevice    1
+
+/** avutils headers */
+#if HAS_libavutil
+#include "libavutil/avutil.h"
+#include "libavutil/buffer.h"
+#include "libavutil/frame.h"
+#include "libavutil/version.h"
+#include "libavutil/hwcontext.h"
+#include "libavutil/pixfmt.h"
+#include "libavutil/pixdesc.h"
+#include "libavutil/pixelutils.h"
+#endif
+
+/** avcodec headers */
+#if HAS_libavcodec
+#include "libavcodec/version.h"
+#include "libavcodec/avcodec.h"
+#ifdef __APPLE__
+#include "libavcodec/videotoolbox.h"
+#endif
+#endif
+
+/** avformat headers */
+#if HAS_libavformat
+#include "libavformat/avformat.h"
+#include "libavformat/avio.h"
+#include "libavformat/version.h"
+#endif
+
+/** avfilter headers */
+#if HAS_libavfilter
+#include "libavfilter/avfilter.h"
+#include "libavfilter/version.h"
+#endif
+
+/** swresample headers */
+#if HAS_libswresample
+#include "libswresample/swresample.h"
+#include "libswresample/version.h"
+#endif
+
+/** swscale headers */
+#if HAS_libswscale
+#include "libswscale/swscale.h"
+#include "libswscale/version.h"
+#endif
+
+#if HAS_libavdevice
+#include "libavdevice/avdevice.h"
+#include "libavdevice/version.h"
+#endif
+
+#ifdef __cplusplus 
+}
+#endif
+
+#endif

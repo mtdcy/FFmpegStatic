@@ -63,9 +63,12 @@ pacman -S wget diffutils tar openssl make
 
 configure host with brew or what ever you want. 
 
-#### Linux
+#### Linux/Ubuntu
 
 configure host with its own package manager system.
+```bash
+sudo apt-get install build-essential pkg-config cmake wget nasm yasm
+```
 
 ### Build Libraries
 

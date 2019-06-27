@@ -1,33 +1,26 @@
 #!/bin/bash 
 
 cd `dirname $0` && SOURCE=`pwd` && cd -
-WORKSPACE=`pwd`/build
-source $SOURCE/packages/cbox.sh
+source $SOURCE/build/cbox.sh
 
 # 1. for release, it's better to build a huge bundle. but for project use, huge bundle takes too much resources
 # global options
-export BUILD_HUGE=${BUILD_HUGE:=1}
+export BUILD_SHARED=${BUILD_SHARED:=0}
 export BUILD_GPL=${BUILD_GPL:=0}
 export BUILD_NONFREE=${BUILD_NONFREE:=0}
-export BUILD_SHARED=${BUILD_SHARED:=0}
-export BUILD_DEMUXER=${BUILD_DEMUXER:=1}
-export BUILD_MUXER=${BUILD_MUXER:=${BUILD_HUGE}}
-export BUILD_DECODER=${BUILD_DECODER:=1}
-export BUILD_ENCODER=${BUILD_ENCODER:=${BUILD_HUGE}}
-export NJOBS=${NJOBS:=4}
 export BUILD_TEST=${BUILD_TEST:=1}
+export NJOBS=${NJOBS:=4}
 
 # local options
 BUILD_DEPS=${BUILD_DEPS:=1}
 
-echo "BUILD_DEPS: $BUILD_DEPS"
-echo "BUILD_HUGE: $BUILD_HUGE"
+info "$SOURCE => $PWD"
+echo "BUILD_SHARED: $BUILD_SHARED"
 echo "BUILD_GPL: $BUILD_GPL"
 echo "BUILD_NONFREE: $BUILD_NONFREE"
 echo "BUILD_TEST: $BUILD_TEST"
+echo "BUILD_DEPS: $BUILD_DEPS"
 echo "NJOBS: $NJOBS"
-echo "SOURCE: $SOURCE"
-echo "WORKSPACE: $WORKSPACE"
 pause "Please check build options..."
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -62,38 +55,45 @@ else
     fi
 fi
 
-export PREFIX=$WORKSPACE/$OSTYPE
-export CC="$CC"
-export CFLAGS=-I$PREFIX/include
-export CPP="$CC -E"
-export CPPFLAGS=
-export CXX="$CXX"
-export CXXFLAGS=-I$PREFIX/include 
-export LD=$LD
-export LDFLAGS=-L$PREFIX/lib
-export PKG_CONFIG=$PKG_CONFIG
-export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
-export AR=$AR
-export AS=$AS
-export NASM=$NASM
-export YASM=$YASM 
-export RANLIB=$RANLIB
-export STRIP=$STRIP
-export MAKE=$MAKE
-# for run test
-export LD_LIBRARY_PATH=$PREFIX/lib
+PREFIX=$PWD/$OSTYPE 
+[ $BUILD_SHARED -eq 1 ] && PREFIX="$PREFIX-shared"
 
-echo "PREFIX: $PREFIX"
-echo "CC: $CC CFLAGS: $CFLAGS"
-echo "CPP: $CPP CPPFLAGS: $CPPFLAGS"
-echo "CXX: $CXX CXXFLAGS: $CXXFLAGS"
-echo "LD: $LD LDFLAGS: $LDFLAGS"
-echo "PKG_CONFIG: $PKG_CONFIG PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
+FLAGS="-g -O2 -DNDEBUG"  # build with debug info
+[[ "$OSTYPE" == "linux"* ]] && FLAGS="$FLAGS -fPIC -DPIC"
+
+CPP="$CC -E"
+CFLAGS=$FLAGS
+CXXFLAGS=$FLAGS
+CPPFLAGS=-I$PREFIX/include
+LDFLAGS=-L$PREFIX/lib
+[ $BUILD_SHARED -eq 1 ] && LDFLAGS="$LDFLAGS -Wl,-rpath,$PREFIX/lib"
+
+PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
+LD_LIBRARY_PATH=$PREFIX/lib     # for run test
+
+# cmake
+CMAKE=`which cmake`
+CMAKE_COMMON_ARGS="-DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE=RelWithDebInfo"
+[[ "$OSTYPE" == "msys" ]] && CMAKE_COMMON_ARGS="$CMAKE_COMMON_ARGS -G\"MSYS Makefiles\""
+
+info "=> $PREFIX"
+echo "CC: $CC $CFLAGS"
+echo "CPP: $CPP $CPPFLAGS"
+echo "CXX: $CXX $CXXFLAGS"
+echo "LD: $LD $LDFLAGS"
+echo "PKG_CONFIG: $PKG_CONFIG $PKG_CONFIG_PATH"
 echo "AR: $AR"
 echo "AS: $AS"
 echo "NASM: $NASM"
 echo "YASM: $YASM"
 echo "MAKE: $MAKE"
+echo "CMAKE: $CMAKE $CMAKE_COMMON_ARGS"
+
+export PREFIX CC CFLAGS CPP CPPFLAGS CXX CXXFLAGS
+export LD LDFLAGS PKG_CONFIG PKG_CONFIG_PATH 
+export AR AS NASM YASM RANLIB STRIP MAKE 
+export LD_LIBRARY_PATH 
+export CMAKE CMAKE_COMMON_ARGS
 pause "Please check compiler..."
 
 function build_package() {
@@ -102,53 +102,60 @@ function build_package() {
 
 # clear 
 [ $BUILD_DEPS -eq 1 ] && rm -rf $PREFIX
-mkdir -p $WORKSPACE && cd $WORKSPACE
-mkdir -p $PREFIX
-touch $PREFIX/LIBRARIES.txt 
+[ -d $PREFIX ] || mkdir -p $PREFIX
 
 # basic libs
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/iconv.sh 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/zlib.sh 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/bzip2.sh
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/lzma.sh
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/iconv.sh 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/zlib.sh 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/bzip2.sh
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/lzma.sh
 
 # audio libs
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/soxr.sh 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/lame.sh         # mp3
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/ogg.sh 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/vorbis.sh       # vorbis
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/amr.sh 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/opus.sh 
-[ $BUILD_DEPS -eq 1 -a $BUILD_NONFREE -eq 1 ] && build_package $SOURCE/packages/fdk-aac.sh  # aac
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/soxr.sh 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/lame.sh         # mp3
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/ogg.sh 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/vorbis.sh       # vorbis
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/amr.sh 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/opus.sh 
+[ $BUILD_DEPS -eq 1 -a $BUILD_NONFREE -eq 1 ] && build_package $SOURCE/build/fdk-aac.sh  # aac
 
 # image libs
 # FIXME: find out the right dependency between jpeg & png & webp & tiff
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/png.sh          # png 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/gif.sh          # gif
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/turbojpeg.sh    # jpeg
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/tiff.sh         # depends on jpeg
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/webp.sh         # depends on jpeg&png&tiff
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openjpeg.sh     # depends on png&tiff
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/png.sh          # png 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/gif.sh          # gif
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/turbojpeg.sh    # jpeg
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/tiff.sh         # depends on jpeg
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/webp.sh         # depends on jpeg&png&tiff
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/openjpeg.sh     # depends on png&tiff
 
 # video libs
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/theora.sh       # theora
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/vpx.sh          # vp8 & vp9
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/openh264.sh     # h264
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/kvazaar.sh      # h265
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/theora.sh       # theora
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/vpx.sh          # vp8 & vp9
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/openh264.sh     # h264
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/kvazaar.sh      # h265
 if [ $BUILD_GPL -eq 1 ]; then 
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x264.sh     # h264
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/x265.sh     # h265
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/xvidcore.sh # xvid
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/frei0r.sh   # frei0r 
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x264.sh     # h264
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x265.sh     # h265
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/xvidcore.sh # xvid
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/frei0r.sh   # frei0r 
 fi
 
 # text libs
-#[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/hurfbuzz.s    # need by libass
-#[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/fribidi.sh    # need by libass
-#[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/ass.sh            
+#[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/hurfbuzz.s    # need by libass
+#[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/fribidi.sh    # need by libass
+#[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/ass.sh            
 
 # demuxers & muxers
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/packages/xml2.sh 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/xml2.sh        # need by libavformat:dashdec
 
-build_package $SOURCE/packages/ffmpeg.sh 
+build_package $SOURCE/build/ffmpeg.sh 
 
+ffmpeg=`cd ffmpeg-*/ && pwd && cd -`
+cmd="cmake -DCMAKE_INSTALL_PREFIX=$PWD/out -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFFMPEG_PREBUILTS=$PREFIX -DFFMPEG_SOURCES=$ffmpeg"
+[[ "$OSTYPE" == "msys" ]] && cmd="$cmd -G\"MSYS Makefiles\""
+cmd="$cmd $SOURCE"
+
+info $cmd
+rm $PWD/out 
+eval $cmd
+$MAKE clean && $MAKE install

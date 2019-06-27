@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 
-project (FFmpeg)
+project (FFmpegStatic)
 
 set (VERSION_MAJOR  0)
 set (VERSION_MINOR  2)
@@ -12,77 +12,41 @@ endif()
 if (NOT DEFINED FFMPEG_SOURCES)
     message(FATAL_ERROR " FFMPEG_SOURCES is not set")
 endif()
-option(WITH_EASY    "FFmpeg easy use interface"     OFF)
-
-# macro for import local static library
-macro (import_static_prebuilt library) 
-    set (_LOC ${FFMPEG_PREBUILTS}/lib/lib${library}.a)
-    if (EXISTS ${_LOC})
-        message (STATUS ": Library ${library} found @ ${_LOC}")
-        add_library(${library} STATIC IMPORTED GLOBAL)
-        set_property(TARGET ${library} PROPERTY IMPORTED_LOCATION ${_LOC})
-    else()
-        message (STATUS ": Library ${library} not found")
-    endif()
-endmacro(import_static_prebuilt)
 
 # project settings
 if (APPLE)
-    set (CMAKE_MACOSX_RPATH TRUE)
+    #set (CMAKE_MACOSX_RPATH TRUE)
 endif()
 
-set (CMAKE_C_VISIBILITY_PRESET hidden)
-
+set (CMAKE_INSTALL_RPATH    "./")   # for ffmpeg
 if (APPLE)
-    set (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
     set (CMAKE_XCODE_ATTRIBUTE_SIGN_IDENTITY "macOS Developer")
     #set (CMAKE_XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET 10.8)
 endif()
+set (CMAKE_C_VISIBILITY_PRESET hidden)
 
 set (CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set (FFMPEG_LIBS avutil avcodec avformat avfilter swresample swscale avdevice postproc)
-set (FFMPEG_DEP_LIBS 
-    z bz2 lzma iconv xml2
-    fdk-aac mp3lame ogg vorbis vorbisenc opus opencore-amrnb opencore-amrwb
-    webpmux webp theoraenc theoradec openh264 kvazaar vpx x264 x265 xvidcore
-    openjp2 
-    soxr)
-
-foreach (LIB ${FFMPEG_DEP_LIBS} ${FFMPEG_LIBS}) 
-    message(STATUS ": import ${LIB}")
-    import_static_prebuilt(${LIB})
-    if (TARGET ${LIB})
-        list(APPEND IMPORTED_LIBS ${LIB})
-    endif()
-endforeach()
+# TODO: pull from ffmpeg's config.h
+set (FFMPEG_LIBS libavutil libavcodec libavformat libavfilter libswresample libswscale libavdevice libpostproc)
 
 # headers
-set (FFMPEG_HEADERS FFmpeg.h)
-file (WRITE ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "
-// Created by Chen Fang.
-// Copyright (c) 2018 Chen Fang. All rights reserved.
-#ifndef __FFMPEG_CONFIGURATION_H__
-#define __FFMPEG_CONFIGURATION_H__
-")
 foreach (LIB ${FFMPEG_LIBS})
-    file (GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${FFMPEG_PREBUILTS}/include/lib${LIB}/*.h")
-    file (APPEND ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "#define FFMPEG_HAS_${LIB}\n")
-    list (APPEND PRIVATE_HEADERS ${_HEADERS})
+    set (HAS_${LIB}     TRUE)
 endforeach()
-file (APPEND ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h "#endif\n")
-list (APPEND FFMPEG_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/FFmpegConfiguration.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FFmpeg.h.in FFmpeg.h)
+set (FFMPEG_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/FFmpeg.h)
 
 # our target 
 add_library(${PROJECT_NAME} SHARED stub.cpp ${FFMPEG_HEADERS} ${PRIVATE_HEADERS})
-
-# include and links
-include_directories(${FFMPEG_PREBUILTS}/include)
-if (CMAKE_COMPILER_IS_GNUCC)
-    target_link_libraries(${PROJECT_NAME} -Wl,--whole-archive -Wl,--start-group ${IMPORTED_LIBS} -Wl,--end-group)
-else()
-    target_link_libraries(${PROJECT_NAME} ${IMPORTED_LIBS})
-endif()
+find_package (PkgConfig REQUIRED)
+foreach (LIB ${FFMPEG_LIBS})
+    pkg_check_modules (${LIB} REQUIRED ${LIB})
+    message (STATUS "${LIB} : ${${LIB}_LIBRARIES}")
+    message (STATUS "${LIB} : ${${LIB}_INCLUDE_DIRS}")
+    target_link_libraries(${PROJECT_NAME} ${${LIB}_LIBRARIES})
+    include_directories (${${LIB}_INCLUDE_DIRS})
+endforeach()
 
 # control visibility of symbols
 if (CMAKE_COMPILER_IS_GNUCC)
@@ -116,25 +80,21 @@ endif()
 
 ##############################################################################
 # rebuilt ffmpeg using our framework
-add_executable(main 
+set (ffmpeg_sources
     ${FFMPEG_SOURCES}/fftools/ffmpeg.c 
     ${FFMPEG_SOURCES}/fftools/cmdutils.c 
     ${FFMPEG_SOURCES}/fftools/ffmpeg_filter.c 
     ${FFMPEG_SOURCES}/fftools/ffmpeg_hw.c
     ${FFMPEG_SOURCES}/fftools/ffmpeg_opt.c 
-    ${FFMPEG_SOURCES}/fftools/ffmpeg_videotoolbox.c 
     ${FFMPEG_SOURCES}/fftools/ffmpeg_cuvid.c
     )
-include_directories (${FFMPEG_SOURCES})
-include_directories (${FFMPEG_SOURCES}/fftools)
-target_link_libraries(main ${PROJECT_NAME})
-
-if (WITH_EASY) 
-    add_executable(easy easy.cpp)
-    find_library (ABE NAMES ABE PATHS ${CMAKE_INSTALL_PREFIX} NO_DEFAULT_PATH)
-    message("ABE: ${ABE}")
-    target_link_libraries(easy ${ABE})
+if (APPLE)
+    list (APPEND ffmpeg_sources ${FFMPEG_SOURCES}/fftools/ffmpeg_videotoolbox.c)
 endif()
+add_executable(ffmpeg ${ffmpeg_sources})
+include_directories (${FFMPEG_SOURCES})     # config.h
+include_directories (${FFMPEG_SOURCES}/fftools)
+target_link_libraries(ffmpeg ${PROJECT_NAME})
 
 ##############################################################################
 # install
@@ -163,7 +123,6 @@ if (XCODE)
 
     # ugly install code
     set (_DEST ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.framework)
-    install (FILES ${FFMPEG_PREBUILTS}/LIBRARIES.txt DESTINATION ${_DEST}/Resources)
     if (EXISTS ${FFMPEG_PREBUILTS}/lib/frei0r-1)
         file (GLOB frei0r "${FFMPEG_PREBUILTS}/lib/frei0r-1/*")
         install(DIRECTORY DESTINATION ${_DEST}/Resources/frei0r-1)
@@ -174,7 +133,7 @@ if (XCODE)
         install (PROGRAMS frei0r.sh DESTINATION ${_DEST} RENAME frei0r)
     endif()
 
-    install (TARGETS main DESTINATION ${_DEST})
+    install (TARGETS ffmpeg DESTINATION ${_DEST})
     file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
     install (FILES ${_LICENSE} DESTINATION ${_DEST}/Resources)
     install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION ${_DEST}/Resources)
@@ -188,13 +147,13 @@ else()
     )
 
     # Install all things to ${CMAKE_INSTALL_PREFIX}
-    install (TARGETS main DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install (TARGETS ffmpeg DESTINATION ${CMAKE_INSTALL_PREFIX})
     install (TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
     # Headers
     install (FILES ${FFMPEG_HEADERS} DESTINATION ${CMAKE_INSTALL_PREFIX})
     foreach (LIB ${FFMPEG_LIBS})
-        install(DIRECTORY ${FFMPEG_PREBUILTS}/include/lib${LIB} DESTINATION ${CMAKE_INSTALL_PREFIX})
+        install(DIRECTORY ${FFMPEG_PREBUILTS}/include/${LIB} DESTINATION ${CMAKE_INSTALL_PREFIX})
     endforeach()
 
     # Resources 
@@ -209,5 +168,4 @@ else()
     install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
     install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
     install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
-    install (FILES ${FFMPEG_PREBUILTS}/LIBRARIES.txt DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
 endif()
