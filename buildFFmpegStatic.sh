@@ -5,6 +5,7 @@ source $SOURCE/build/cbox.sh
 
 # 1. for release, it's better to build a huge bundle. but for project use, huge bundle takes too much resources
 # global options
+export BUILD_HUGE=${BUILD_HUGE:=0}
 export BUILD_SHARED=${BUILD_SHARED:=0}
 export BUILD_GPL=${BUILD_GPL:=0}
 export BUILD_NONFREE=${BUILD_NONFREE:=0}
@@ -103,6 +104,7 @@ function build_package() {
 [ $BUILD_DEPS -eq 1 ] && rm -rf $PREFIX
 [ -d $PREFIX ] || mkdir -p $PREFIX
 
+# always build all deps
 # basic libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/iconv.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/zlib.sh 
@@ -111,12 +113,12 @@ function build_package() {
 
 # audio libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/soxr.sh 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/lame.sh         # mp3
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/lame.sh        # mp3
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/ogg.sh 
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/vorbis.sh       # vorbis
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/vorbis.sh      # vorbis
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/amr.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/opus.sh 
-[ $BUILD_DEPS -eq 1 -a $BUILD_NONFREE -eq 1 ] && build_package $SOURCE/build/fdk-aac.sh  # aac
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/fdk-aac.sh     # aac
 
 # image libs
 # FIXME: find out the right dependency between jpeg & png & webp & tiff
@@ -125,19 +127,17 @@ function build_package() {
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/turbojpeg.sh    # jpeg
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/tiff.sh         # depends on jpeg
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/webp.sh         # depends on jpeg&png&tiff
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/openjpeg.sh     # depends on png&tiff
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/openjpeg.sh     # depends on png&tiff, for jpeg2000
 
 # video libs
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/theora.sh       # theora
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/vpx.sh          # vp8 & vp9
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/openh264.sh     # h264
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/kvazaar.sh      # h265
-if [ $BUILD_GPL -eq 1 ]; then 
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x264.sh     # h264
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x265.sh     # h265
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/xvidcore.sh # xvid
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/frei0r.sh   # frei0r 
-fi
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/theora.sh      # theora
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/vpx.sh         # vp8 & vp9
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/openh264.sh    # h264, LGPL
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/kvazaar.sh     # h265, LGPL
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x264.sh        # h264, GPL
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x265.sh        # h265, GPL
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/xvidcore.sh    # xvid, GPL
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/frei0r.sh      # frei0r, GPL
 
 # text libs
 #[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/hurfbuzz.s    # need by libass
@@ -146,6 +146,7 @@ fi
 
 # demuxers & muxers
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/xml2.sh        # need by libavformat:dashdec
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/sdl2.sh        # need by ffplay
 
 build_package $SOURCE/build/ffmpeg.sh 
 

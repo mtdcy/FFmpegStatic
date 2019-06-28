@@ -8,13 +8,13 @@
 
 #include <FFmpeg.h>
 
-#if HAS_libavutil
+#ifdef HAS_libavutil
 void ffmpeg_avutil_stub_load() {
     // NOTHING
 }
 #endif
 
-#if HAS_libavcodec
+#ifdef HAS_libavcodec
 void ffmpeg_avcodec_stub_load() {
     (void)avcodec_alloc_context3(NULL);
     (void)avcodec_open2(NULL, NULL, NULL);
@@ -22,26 +22,26 @@ void ffmpeg_avcodec_stub_load() {
 }
 #endif
 
-#if HAS_libavformat
+#ifdef HAS_libavformat
 void ffmpeg_avformat_stub_load() {
     (void)avformat_open_input(NULL, NULL, NULL, NULL);
     (void)avformat_close_input(NULL);
 }
 #endif
 
-#if HAS_libavfilter
+#ifdef HAS_libavfilter
 void ffmpeg_avfilter_stub_load() {
     (void)avfilter_get_by_name(NULL);
 }
 #endif
 
-#if HAS_libswresample
+#ifdef HAS_libswresample
 void ffmpeg_swresample_stub_load() {
     (void)swr_init(NULL);
 }
 #endif
 
-#if HAS_libswscale
+#ifdef HAS_libswscale
 void ffmpeg_swscale_stub_load() {
     (void)sws_getContext(0, 0, AV_PIX_FMT_NONE,
                          0, 0, AV_PIX_FMT_NONE,
@@ -49,7 +49,7 @@ void ffmpeg_swscale_stub_load() {
 }
 #endif
 
-#if HAS_libavdevice
+#ifdef HAS_libavdevice
 void ffmpeg_avdevice_stub_load() {
     (void)avdevice_list_devices(NULL, NULL);
 }

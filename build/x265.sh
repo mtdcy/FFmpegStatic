@@ -20,40 +20,46 @@ rm -rf tmp
 mkdir -p tmp; cd tmp;
 mkdir -p 8bit 10bit 12bit
 
-# 12 bit
-cd 12bit
-cmd="$CMAKE $CMAKE_COMMON_ARGS $ARGS $HIGH_BIT_ARGS -DMAIN12=ON ../../source"
-info "x265: $cmd"
-eval $cmd || error "x265: $cmd failed"
-$MAKE -j$NJOBS x265-static || error "12bit: make x265-static failed"
-cd -
+# software encoder as fallback, 8 bit is ok
+if [ $BUILD_HUGE -eq 1 ]; then 
+    # 12 bit
+    cd 12bit
+    cmd="$CMAKE $CMAKE_COMMON_ARGS $ARGS $HIGH_BIT_ARGS -DMAIN12=ON ../../source"
+    info "x265: $cmd"
+    eval $cmd || error "x265: $cmd failed"
+    $MAKE -j$NJOBS x265-static || error "12bit: make x265-static failed"
+    cd -
 
-# 10 bit
-cd 10bit
-cmd="$CMAKE $CMAKE_COMMON_ARGS $ARGS $HIGH_BIT_ARGS ../../source"
-info "x265: $cmd"
-eval $cmd || error "x265: $cmd failed"
-$MAKE -j$NJOBS x265-static || error "10bit: make x265-static failed"
-cd -
+    # 10 bit
+    cd 10bit
+    cmd="$CMAKE $CMAKE_COMMON_ARGS $ARGS $HIGH_BIT_ARGS ../../source"
+    info "x265: $cmd"
+    eval $cmd || error "x265: $cmd failed"
+    $MAKE -j$NJOBS x265-static || error "10bit: make x265-static failed"
+    cd -
+fi
 
 # 8 bit
 cd 8bit
-ln -svf ../10bit/libx265.a libx265_main10.a
-ln -svf ../12bit/libx265.a libx265_main12.a
-
 [ $BUILD_SHARED -eq 1 ] && ARGS+=" -DENABLE_SHARED=ON" || ARGS+=" -DENABLE_SHARED=OFF"
-cmd="$CMAKE $CMAKE_COMMON_ARGS $ARGS -DEXTRA_LIB=\"x265_main10.a;x265_main12.a\" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON ../../source"
-info "x265: $cmd"
-eval $cmd || error "x265: $cmd failed"
 
-# x265 always install static lib
-info "x265: make x265-static"
-$MAKE -j$NJOBS x265-static || error "x265: make x265-static failed"
-mv libx265.a libx265_main.a 
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    libtool -static -o libx265.a libx265_main.a libx265_main10.a libx265_main12.a 2> /dev/null || error "libtool failed"
-else
-    $AR -M <<-'EOF'
+cmd="$CMAKE $CMAKE_COMMON_ARGS $ARGS -S ../../source"
+
+if [ $BUILD_HUGE -eq 1 ]; then 
+    ln -svf ../10bit/libx265.a libx265_main10.a
+    ln -svf ../12bit/libx265.a libx265_main12.a
+    cmd="$cmd -DEXTRA_LIB=\"x265_main10.a;x265_main12.a\" -DEXTRA_LINK_FLAGS=-L. -DLINKED_10BIT=ON -DLINKED_12BIT=ON"
+    info "x265: $cmd"
+    eval $cmd || error "x265: $cmd failed"
+
+    # x265 always install static lib
+    info "x265: make x265-static"
+    $MAKE -j$NJOBS x265-static || error "x265: make x265-static failed"
+    mv libx265.a libx265_main.a 
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        libtool -static -o libx265.a libx265_main.a libx265_main10.a libx265_main12.a 2> /dev/null || error "libtool failed"
+    else
+        $AR -M <<-'EOF'
 CREATE libx265.a
 ADDLIB libx265_main.a
 ADDLIB libx265_main10.a
@@ -61,9 +67,12 @@ ADDLIB libx265_main12.a
 SAVE
 END
 EOF
+    fi
+else
+    info "x265: $cmd"
+    eval $cmd || error "x265: $cmd failed"
 fi
 
-info "x265: install..."
 $MAKE install || error "make install failed"
 cd -
 
