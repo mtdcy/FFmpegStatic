@@ -10,6 +10,7 @@ export BUILD_GPL=${BUILD_GPL:=0}
 export BUILD_NONFREE=${BUILD_NONFREE:=0}
 export BUILD_TEST=${BUILD_TEST:=1}
 export NJOBS=${NJOBS:=4}
+export BUILD_FRAMEWORK=${BUILD_FRAMEWORK:=1}    # build framework for mac
 
 # local options
 BUILD_DEPS=${BUILD_DEPS:=1}
@@ -149,18 +150,21 @@ fi
 build_package $SOURCE/build/ffmpeg.sh 
 
 cd ffmpeg-* && ffmpeg=$PWD && cd -
-cmd="cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFFMPEG_PREBUILTS=$PREFIX -DFFMPEG_SOURCES=$ffmpeg"
-[[ "$OSTYPE" == "darwin"* ]] && cmd="$cmd -DCMAKE_INSTALL_PREFIX=$HOME/Library/Frameworks" || cmd="$cmd -DCMAKE_INSTALL_PREFIX=$PWD/out"
+cmd="cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFFMPEG_PREBUILTS=$PREFIX -DFFMPEG_SOURCES=$ffmpeg -S $SOURCE"
 [[ "$OSTYPE" == "msys" ]] && cmd="$cmd -G\"MSYS Makefiles\""
-[[ "$OSTYPE" == "darwin"* ]] && cmd="$cmd -GXcode"
-cmd="$cmd $SOURCE"
 
-[[ "$OSTYPE" == "darwin"* ]] && cmd="$cmd && xcodebuild -alltargets -config Release" || cmd="$cmd && $MAKE install"
+if [[ "$OSTYPE" == "darwin"* && $BUILD_FRAMEWORK -eq 1 ]]; then
+    unset LD     # cmake take LD instead CC as C compiler, why?
+    cmd="$cmd -GXcode -DCMAKE_INSTALL_PREFIX=$HOME/Library/Frameworks"
+    cmd="$cmd && xcodebuild -alltargets -config Release"
+else
+    cmd="$cmd $CMAKE_COMMON_ARGS -DCMAKE_INSTALL_PREFIX=$PWD/out"
+    cmd="$cmd && $MAKE install"
+fi
 
 info $cmd
 [ -e $PWD/out ] && rm -rf $PWD/out
 [ -e CMakeCache.txt ] && rm CMakeCache.txt
-[[ "$OSTYPE" == "darwin"* ]] && unset LD     # cmake take LD instead CC as C compiler, why?
 eval $cmd
 
 # copy msys runtime libs
