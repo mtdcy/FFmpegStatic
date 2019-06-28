@@ -109,7 +109,7 @@ function build_package() {
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/lzma.sh
 
 # audio libs
-[ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/build/soxr.sh 
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/soxr.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/lame.sh         # mp3
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/ogg.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/vorbis.sh       # vorbis
@@ -121,10 +121,10 @@ function build_package() {
 # FIXME: find out the right dependency between jpeg & png & webp & tiff
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/png.sh          # png 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/gif.sh          # gif
-[ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/build/turbojpeg.sh    # jpeg
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/turbojpeg.sh    # jpeg
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/tiff.sh         # depends on jpeg
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/webp.sh         # depends on jpeg&png&tiff
-[ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/build/openjpeg.sh     # depends on png&tiff
+[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/openjpeg.sh     # depends on png&tiff
 
 # video libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/theora.sh       # theora
@@ -133,7 +133,7 @@ function build_package() {
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/kvazaar.sh      # h265
 if [ $BUILD_GPL -eq 1 ]; then 
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x264.sh     # h264
-    [ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/build/x265.sh     # h265
+    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x265.sh     # h265
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/xvidcore.sh # xvid
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/frei0r.sh   # frei0r 
 fi
@@ -160,6 +160,7 @@ cmd="$cmd $SOURCE"
 info $cmd
 [ -e $PWD/out ] && rm -rf $PWD/out
 [ -e CMakeCache.txt ] && rm CMakeCache.txt
+[[ "$OSTYPE" == "darwin"* ]] && unset LD     # cmake take LD instead CC as C compiler, why?
 eval $cmd
 
 # copy msys runtime libs
