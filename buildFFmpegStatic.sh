@@ -157,7 +157,7 @@ cmd="cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFFMPEG_PREBUILTS=$PREFIX -DFFMPEG
 if [[ "$OSTYPE" == "darwin"* && $BUILD_FRAMEWORK -eq 1 ]]; then
     unset LD     # cmake take LD instead CC as C compiler, why?
     cmd="$cmd -GXcode -DCMAKE_INSTALL_PREFIX=$HOME/Library/Frameworks"
-    cmd="$cmd && xcodebuild -alltargets -config Release"
+    cmd="$cmd && xcodebuild -alltargets -config RelWithDebInfo"
 else
     cmd="$cmd $CMAKE_COMMON_ARGS -DCMAKE_INSTALL_PREFIX=$PWD/out"
     cmd="$cmd && $MAKE install"
