@@ -71,6 +71,9 @@ ARGS+=" --enable-libtheora"     # theora encoding
 ARGS+=" --enable-libopenjpeg"   # jpeg 2000 encoding & decoding
 ARGS+=" --enable-libwebp"       # webp encoding
 ARGS+=" --enable-libopenh264"   # h264 encoding
+
+# read kvazaar's README
+[[ "$OSTYPE" == "msys" && $BUILD_SHARED -eq 0 ]] && ARGS+=" --extra-cflags=-DKVZ_STATIC_LIB"
 ARGS+=" --enable-libkvazaar"    # hevc encoding
 #ARGS+=" --enable-libass"       # FIXME
 if [ $BUILD_GPL -eq 1 ]; then

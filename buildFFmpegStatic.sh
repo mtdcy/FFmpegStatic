@@ -23,28 +23,21 @@ echo "BUILD_DEPS: $BUILD_DEPS"
 echo "NJOBS: $NJOBS"
 pause "Please check build options..."
 
-CC=`which gcc`
-CXX=`which g++`
-AR=`which ar`
-AS=`which as`
-LD=`which ld`
-RANLIB=`which ranlib`
-STRIP=`which strip`
-MAKE=`which make`
-PKG_CONFIG=`which pkg-config`
-if [[ "$OSTYPE" == "msys" ]]; then
-    # using MSYS make which using shell to execute its command
-    # for those who prefer windows cmd, switch to mingw32-make 
-    # MAKE=`which mingw32-make`
-    echo "msys"
-fi
+[[ "$OSTYPE" == "msys" ]] && suffix=".exe"
+CC=`which gcc$suffix`
+CXX=`which g++$suffix`
+AR=`which ar$suffix`
+AS=`which as$suffix`
+LD=`which ld$suffix`
+RANLIB=`which ranlib$suffix`
+STRIP=`which strip$suffix`
+MAKE=`which make$suffix`
+PKG_CONFIG=`which pkg-config$suffix`
 
 PREFIX=$PWD/$OSTYPE 
 [ $BUILD_SHARED -eq 1 ] && PREFIX="$PREFIX-shared"
 
-FLAGS="-g -O2 -DNDEBUG"  # build with debug info
-[[ "$OSTYPE" == "linux"* ]] && FLAGS="$FLAGS -fPIC -DPIC"
-#[[ "$OSTYPE" == "darwin"* ]] && FLAGS="$FLAGS -isysroot `xcrun --show-sdk-path`"
+FLAGS="-g -O2 -DNDEBUG -fPIC -DPIC"  # build with debug info & PIC
 
 CFLAGS=$FLAGS
 CXXFLAGS=$FLAGS
@@ -54,16 +47,31 @@ LDFLAGS=-L$PREFIX/lib
 [ $BUILD_SHARED -eq 1 ] && LDFLAGS="$LDFLAGS -Wl,-rpath,$PREFIX/lib"
 
 # as
-NASM=`which nasm`
-YASM=`which yasm`
+NASM=`which nasm$suffix`
+YASM=`which yasm$suffix`
 
 # pkg-config
 PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
 LD_LIBRARY_PATH=$PREFIX/lib     # for run test
 
 # cmake
-CMAKE=`which cmake`
-CMAKE_COMMON_ARGS="-DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_BUILD_TYPE=RelWithDebInfo"
+CMAKE=`which cmake$suffix`
+# cmake may affect by some environment variables but do no handle it right
+# cmake using a mixed path style with MSYS Makefiles, why???
+CMAKE_COMMON_ARGS="-DCMAKE_INSTALL_PREFIX=$PREFIX
+		   -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+		   -DCMAKE_C_COMPILER=$CC
+		   -DCMAKE_CXX_COMPILER=$CXX
+		   -DCMAKE_C_FLAGS=\"$CFLAGS\"
+		   -DCMAKE_CXX_FLAGS=\"$CXXFLAGS\"
+		   -DCMAKE_ASM_NASM_COMPILER=$NASM
+		   -DCMAKE_ASM_YASM_COMPILER=$YASM
+		   -DCMAKE_AR=$AR
+		   -DCMAKE_LINKER=$LD
+		   -DCMAKE_MODULE_LINKER_FLAGS=\"$LDFLAGS\"
+		   -DCMAKE_EXE_LINKER_FLAGS=\"$LDFLAGS\"
+		   -DCMAKE_MAKE_PROGRAM=$MAKE
+		   "
 [[ "$OSTYPE" == "msys" ]] && CMAKE_COMMON_ARGS="$CMAKE_COMMON_ARGS -G\"MSYS Makefiles\""
 
 info "=> $PREFIX"
@@ -101,7 +109,7 @@ function build_package() {
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/lzma.sh
 
 # audio libs
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/soxr.sh 
+[ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/build/soxr.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/lame.sh         # mp3
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/ogg.sh 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/vorbis.sh       # vorbis
@@ -113,10 +121,10 @@ function build_package() {
 # FIXME: find out the right dependency between jpeg & png & webp & tiff
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/png.sh          # png 
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/gif.sh          # gif
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/turbojpeg.sh    # jpeg
+[ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/build/turbojpeg.sh    # jpeg
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/tiff.sh         # depends on jpeg
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/webp.sh         # depends on jpeg&png&tiff
-[ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/openjpeg.sh     # depends on png&tiff
+[ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/build/openjpeg.sh     # depends on png&tiff
 
 # video libs
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/theora.sh       # theora
@@ -125,7 +133,7 @@ function build_package() {
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/kvazaar.sh      # h265
 if [ $BUILD_GPL -eq 1 ]; then 
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x264.sh     # h264
-    [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/x265.sh     # h265
+    [ $BUILD_DEPS -eq 0 ] && build_package $SOURCE/build/x265.sh     # h265
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/xvidcore.sh # xvid
     [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/frei0r.sh   # frei0r 
 fi
@@ -152,5 +160,13 @@ cmd="$cmd $SOURCE"
 info $cmd
 [ -e $PWD/out ] && rm -rf $PWD/out
 [ -e CMakeCache.txt ] && rm CMakeCache.txt
-[[ "$OSTYPE" == "darwin"* ]] && unset LD     # cmake take LD instead CC as C compiler, why?
 eval $cmd
+
+# copy msys runtime libs
+if [[ "$OSTYPE" == "msys" ]]; then
+    objdump -p $PWD/out/*.dll | grep "DLL Name" |
+    while read line; do
+        dll=`which ${line#*:}`
+	[[ "$dll" == *"mingw"* ]] && cp -v $dll $PWD/out/
+    done
+fi

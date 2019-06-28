@@ -12,9 +12,7 @@ sha256=c5b9fc260cabbc4a81561a448f4ce9cad7218272b4011feabc3a6b751b2f0662
 
 prepare_pkg_source $url $sha256 $SOURCE/packages/`basename $url` && cd x265*/
 
-ARGS="-DNASM_EXECUTABLE=$NASM"
-
-[[ "$OSTYPE" == "msys" ]] && GENERATOR="MSYS Makefiles" || GENERATOR="Unix Makefiles"
+ARGS=""
 
 HIGH_BIT_ARGS="-DHIGH_BIT_DEPTH=ON -DEXPORT_C_API=OFF -DENABLE_CLI=OFF -DENABLE_SHARED=OFF"
 

@@ -14,7 +14,7 @@ prepare_pkg_source $url $sha256 $SOURCE/packages/`basename $url` && cd frei0r-*/
 # both build system has its faults
 if [[ "$OSTYPE" == "msys" ]]; then
     ARGS="-DCMAKE_INSTALL_PREFIX=$PREFIX"
-    ARGS+="-DCMAKE_MAKE_PROGRAM=$MAKE"
+    ARGS+=" -DCMAKE_MAKE_PROGRAM=$MAKE"
 
     rm -rf build 
     mkdir -p build && cd build 

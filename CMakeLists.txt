@@ -2,6 +2,7 @@ cmake_minimum_required (VERSION 2.8)
 
 project (FFmpegStatic)
 
+# TODO: pull version from ffmpeg source
 set (VERSION_MAJOR  0)
 set (VERSION_MINOR  2)
 set (VERSION_BUILD  1)
@@ -73,10 +74,6 @@ if (APPLE)
         target_link_libraries(${PROJECT_NAME} "-framework ${FRAMEWORK}")
     endforeach()
     target_link_libraries(${PROJECT_NAME} -lobjc)
-elseif(WIN32)
-    target_link_libraries(${PROJECT_NAME} -lbcrypt -lmsvcrt -lsecur32 -lws2_32 -lwinpthread)
-else()
-    # FIXME
 endif()
 
 ##############################################################################
@@ -169,4 +166,7 @@ else()
     install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
     install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
     install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${CMAKE_INSTALL_PREFIX}/Resources)
+
+    if (WIN32)
+    endif()
 endif()
