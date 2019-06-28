@@ -33,6 +33,8 @@ set (FFMPEG_LIBS libavutil libavcodec libavformat)
 
 # headers
 foreach (LIB ${FFMPEG_LIBS})
+    file (GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${FFMPEG_PREBUILTS}/include/${LIB}/*.h")
+    list (APPEND PRIVATE_HEADERS ${_HEADERS})
     set (HAS_${LIB}     TRUE)
 endforeach()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FFmpeg.h.in FFmpeg.h)
@@ -64,8 +66,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "${EXTRA_LINK_FLAGS}
 if (XCODE)
     # libraries headers
     foreach (LIB ${FFMPEG_LIBS})
-        file (GLOB _HEADERS "${FFMPEG_PREBUILTS}/include/lib${LIB}/*.h")
-        set_property(SOURCE ${_HEADERS} PROPERTY MACOSX_PACKAGE_LOCATION Headers/lib${LIB})
+        file (GLOB _HEADERS "${FFMPEG_PREBUILTS}/include/${LIB}/*.h")
+        set_property(SOURCE ${_HEADERS} PROPERTY MACOSX_PACKAGE_LOCATION Headers/${LIB})
     endforeach()
 
     set_target_properties(${PROJECT_NAME} PROPERTIES
