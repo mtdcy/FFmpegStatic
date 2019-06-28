@@ -11,7 +11,7 @@ prepare_pkg_source $url $sha256 $SOURCE/packages/`basename $url` && cd ffmpeg-*/
 
 export FFMPEG_SOURCES=`pwd`
 # FFmpeg - GPL or LGPL
-ARGS="--prefix=$PREFIX --enable-pic --enable-hardcoded-tables"
+ARGS="--prefix=$PREFIX --enable-pic --enable-hardcoded-tables --disable-stripping"
 ARGS+=" --extra-ldflags=\"$LDFLAGS\" --extra-cflags=\"$CFLAGS\""
 if [ $BUILD_SHARED -eq 1 ]; then
     ARGS+=" --enable-shared --disable-static --enable-rpath"
@@ -93,6 +93,14 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     #ARGS+=" --enable-opencl"
     ARGS+=" --enable-d3d11va"
     ARGS+=" --enable-dxva2"
+else
+    echo "no hwaccel for Linux"
+    # no hwaccel for Linux, as non of them are offical & universal
+    # enable these only for local project usage
+    #ARGS+=" --enable-opencl"
+    #ARGS+=" --enable-opengl"
+    #ARGS+=" --enable-vdpau"
+    #ARGS+=" --enable-vaapi"
 fi
 
 # for test
