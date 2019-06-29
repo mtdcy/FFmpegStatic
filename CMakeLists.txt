@@ -3,8 +3,8 @@ cmake_minimum_required (VERSION 2.8)
 project (FFmpegStatic)
 
 # TODO: pull version from ffmpeg source
-set (VERSION_MAJOR  0)
-set (VERSION_MINOR  2)
+set (VERSION_MAJOR  1)
+set (VERSION_MINOR  0)
 set (VERSION_BUILD  1)
 
 if (NOT DEFINED FFMPEG_PREBUILTS)
