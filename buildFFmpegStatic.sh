@@ -1,7 +1,14 @@
 #!/bin/bash 
+[ -z $BASH ] && { exec bash "$0" "$@" || exit; }
 
 cd `dirname $0` && SOURCE=`pwd` && cd -
 source $SOURCE/build/cbox.sh
+
+export LC_ALL=C
+export LANG=C
+umask 022
+#set -e # exit on error
+#set -x
 
 # 1. for release, it's better to build a huge bundle. but for project use, huge bundle takes too much resources
 # global options
@@ -97,7 +104,7 @@ export CMAKE CMAKE_COMMON_ARGS
 pause "Please check compiler..."
 
 function build_package() {
-    $SHELL $1 || exit 1
+    bash $1 || exit 1
 }
 
 # clear 
@@ -159,8 +166,8 @@ if [[ "$OSTYPE" == "darwin"* && $BUILD_FRAMEWORK -eq 1 ]]; then
     cmd="$cmd -GXcode -DCMAKE_INSTALL_PREFIX=$HOME/Library/Frameworks"
     cmd="$cmd && xcodebuild -alltargets -config RelWithDebInfo"
 else
-    cmd="$cmd $CMAKE_COMMON_ARGS -DCMAKE_INSTALL_PREFIX=$PWD/out"
-    cmd="$cmd && $MAKE install"
+    cmd="$cmd $CMAKE_COMMON_ARGS -DCMAKE_INSTALL_PREFIX=/usr/local"
+    cmd="$cmd && $MAKE && sudo $MAKE install"
 fi
 
 info $cmd

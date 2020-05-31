@@ -6,7 +6,7 @@ Prebuilt bundles can be downloaded from the [Release page](https://github.com/mt
 
 This Project includes:
 
-- [bash script](build.sh) for creating static libraries of FFmpeg and its dependencies
+- [bash script](buildFFmpegStatic.sh) for creating static libraries of FFmpeg and its dependencies
 - [CMakeLists.txt](CMakeLists.txt) and [stub code](stub.cpp) for creating bundle for different os
 
 ## External Libraries

@@ -57,16 +57,16 @@ function sha256() {
 
 # sha256 <url> <sha256> [local]
 function download() {
-    echo $@
-    url=$1
-    sha=$2
-    file=$3
-    exists=0
+    local url=$1
+    local sha=$2
+    local file=$3
+    local exists=0
 
-    info "$url[$sha] => $file"
+    info "$url $sha => $file"
 
     if [ -e $file ]; then
-        if [ "`sha256 $file`" == "$sha" ]; then 
+        if [[ `sha256 $file` == $sha ]]; then 
+            info "local file exists"
             exists=1
         else
             error "$file broken..."
