@@ -1,3 +1,4 @@
+out/
 xcode/
 *.swp
 .DS_Store

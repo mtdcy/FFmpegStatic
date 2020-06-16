@@ -7,12 +7,8 @@ set (VERSION_MAJOR  1)
 set (VERSION_MINOR  0)
 set (VERSION_BUILD  1)
 
-if (NOT DEFINED FFMPEG_PREBUILTS)
-    message(FATAL_ERROR " FFMPEG_PREBUILTS is not set")
-endif()
-if (NOT DEFINED FFMPEG_SOURCES)
-    message(FATAL_ERROR " FFMPEG_SOURCES is not set")
-endif()
+set (FFMPEG_PREBUILTS   ${CMAKE_CURRENT_SOURCE_DIR}/out)
+set (ENV{PKG_CONFIG_PATH} "${FFMPEG_PREBUILTS}/static/lib/pkgconfig")  # for pkg-config
 
 # project settings
 if (APPLE)
@@ -33,7 +29,7 @@ set (FFMPEG_LIBS libavutil libavcodec libavformat)
 
 # headers
 foreach (LIB ${FFMPEG_LIBS})
-    file (GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${FFMPEG_PREBUILTS}/include/${LIB}/*.h")
+    file (GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${FFMPEG_PREBUILTS}/static/include/${LIB}/*.h")
     list (APPEND PRIVATE_HEADERS ${_HEADERS})
     set (HAS_${LIB}     TRUE)
 endforeach()
@@ -66,7 +62,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "${EXTRA_LINK_FLAGS}
 if (XCODE)
     # libraries headers
     foreach (LIB ${FFMPEG_LIBS})
-        file (GLOB _HEADERS "${FFMPEG_PREBUILTS}/include/${LIB}/*.h")
+        file (GLOB _HEADERS "${FFMPEG_PREBUILTS}/static/include/${LIB}/*.h")
         set_property(SOURCE ${_HEADERS} PROPERTY MACOSX_PACKAGE_LOCATION Headers/${LIB})
     endforeach()
 
@@ -88,8 +84,8 @@ if (XCODE)
 
     # ugly install code
     set (_DEST ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.framework)
-    if (EXISTS ${FFMPEG_PREBUILTS}/lib/frei0r-1)
-        file (GLOB frei0r "${FFMPEG_PREBUILTS}/lib/frei0r-1/*")
+    if (EXISTS ${FFMPEG_PREBUILTS}/static/lib/frei0r-1)
+        file (GLOB frei0r "${FFMPEG_PREBUILTS}/static/lib/frei0r-1/*")
         install(DIRECTORY DESTINATION ${_DEST}/Resources/frei0r-1)
         foreach (so ${frei0r})
             get_filename_component(_so ${so} NAME_WE)
@@ -98,15 +94,15 @@ if (XCODE)
         install (PROGRAMS frei0r.sh DESTINATION ${_DEST} RENAME frei0r)
     endif()
 
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffmpeg DESTINATION ${_DEST})
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffprobe DESTINATION ${_DEST})
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffplay DESTINATION ${_DEST})
-    file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION ${_DEST})
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION ${_DEST})
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION ${_DEST})
+    file (GLOB _LICENSE "${FFMPEG_SOURCES}/ffmpeg-4.1/COPYING*")
     install (FILES ${_LICENSE} DESTINATION ${_DEST}/Resources)
-    install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION ${_DEST}/Resources)
-    install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION ${_DEST}/Resources)
-    install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${_DEST}/Resources)
-    install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/ffmpeg-4.1/VERSION DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/ffmpeg-4.1/RELEASE DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/ffmpeg-4.1/RELEASE_NOTES DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/ffmpeg-4.1/Changelog DESTINATION ${_DEST}/Resources)
 else()
     set_target_properties(${PROJECT_NAME} PROPERTIES
         SOVERSION       "${VERSION_MAJOR}.${VERSION_MINOR}"
@@ -114,29 +110,29 @@ else()
     )
 
     # Install all things to ${CMAKE_INSTALL_PREFIX}
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffmpeg DESTINATION bin)
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffprobe DESTINATION bin)
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffplay DESTINATION bin)
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION bin)
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION bin)
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION bin)
     install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 
     # Headers
     install (FILES ${FFMPEG_HEADERS} DESTINATION include)
     foreach (LIB ${FFMPEG_LIBS})
-        install(DIRECTORY ${FFMPEG_PREBUILTS}/include/${LIB} DESTINATION include)
+        install(DIRECTORY ${FFMPEG_PREBUILTS}/static/include/${LIB} DESTINATION include)
     endforeach()
 
     # Resources 
-    if (EXISTS ${FFMPEG_PREBUILTS}/lib/frei0r-1)
-        install (DIRECTORY ${FFMPEG_PREBUILTS}/lib/frei0r-1 DESTINATION bin)
+    if (EXISTS ${FFMPEG_PREBUILTS}/static/lib/frei0r-1)
+        install (DIRECTORY ${FFMPEG_PREBUILTS}/static/lib/frei0r-1 DESTINATION bin)
         install (PROGRAMS frei0r.sh DESTINATION ${CMAKE_INSTALL_PREFIX} RENAME frei0r)
     endif()
 
-    file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
+    file (GLOB _LICENSE "${FFMPEG_SOURCES}/ffmpeg-4.1/COPYING*")
     install (FILES ${_LICENSE} DESTINATION share/${PROJECT_NAME})
-    install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION share/${PROJECT_NAME})
-    install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION share/${PROJECT_NAME})
-    install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION share/${PROJECT_NAME})
-    install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION share/${PROJECT_NAME})
+    install (FILES ${FFMPEG_SOURCES}/ffmpeg-4.1/VERSION DESTINATION share/${PROJECT_NAME})
+    install (FILES ${FFMPEG_SOURCES}/ffmpeg-4.1/RELEASE DESTINATION share/${PROJECT_NAME})
+    install (FILES ${FFMPEG_SOURCES}/ffmpeg-4.1/RELEASE_NOTES DESTINATION share/${PROJECT_NAME})
+    install (FILES ${FFMPEG_SOURCES}/ffmpeg-4.1/Changelog DESTINATION share/${PROJECT_NAME})
 
     if (WIN32)
     endif()

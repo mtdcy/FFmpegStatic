@@ -10,6 +10,10 @@ umask 022
 #set -e # exit on error
 #set -x
 
+# working directory
+mkdir -p $SOURCE/out
+cd $SOURCE/out
+
 # 1. for release, it's better to build a huge bundle. but for project use, huge bundle takes too much resources
 # global options
 export BUILD_HUGE=${BUILD_HUGE:=0}
@@ -43,7 +47,7 @@ STRIP=`which strip$suffix`
 MAKE=`which make$suffix`
 PKG_CONFIG=`which pkg-config$suffix`
 
-PREFIX=$PWD/$OSTYPE 
+PREFIX=$PWD/static
 [ $BUILD_SHARED -eq 1 ] && PREFIX="$PREFIX-shared"
 
 FLAGS="-g -O2 -DNDEBUG -fPIC -DPIC"  # build with debug info & PIC
@@ -156,30 +160,3 @@ function build_package() {
 [ $BUILD_DEPS -eq 1 ] && build_package $SOURCE/build/sdl2.sh        # need by ffplay
 
 build_package $SOURCE/build/ffmpeg.sh 
-
-cd ffmpeg-* && ffmpeg=$PWD && cd -
-cmd="cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DFFMPEG_PREBUILTS=$PREFIX -DFFMPEG_SOURCES=$ffmpeg -S $SOURCE"
-[[ "$OSTYPE" == "msys" ]] && cmd="$cmd -G\"MSYS Makefiles\""
-
-if [[ "$OSTYPE" == "darwin"* && $BUILD_FRAMEWORK -eq 1 ]]; then
-    unset LD     # cmake take LD instead CC as C compiler, why?
-    cmd="$cmd -GXcode -DCMAKE_INSTALL_PREFIX=$HOME/Library/Frameworks"
-    cmd="$cmd && xcodebuild -alltargets -config RelWithDebInfo"
-else
-    cmd="$cmd $CMAKE_COMMON_ARGS -DCMAKE_INSTALL_PREFIX=/usr/local"
-    cmd="$cmd && $MAKE && sudo $MAKE install"
-fi
-
-info $cmd
-[ -e $PWD/out ] && rm -rf $PWD/out
-[ -e CMakeCache.txt ] && rm CMakeCache.txt
-eval $cmd
-
-# copy msys runtime libs
-if [[ "$OSTYPE" == "msys" ]]; then
-    objdump -p $PWD/out/*.dll | grep "DLL Name" |
-    while read line; do
-        dll=`which ${line#*:}`
-	[[ "$dll" == *"mingw"* ]] && cp -v $dll $PWD/out/
-    done
-fi
