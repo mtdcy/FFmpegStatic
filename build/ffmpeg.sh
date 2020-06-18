@@ -25,59 +25,63 @@ else
     fi
 fi
 
-if [ $BUILD_HUGE -eq 1 ]; then
-    ARGS+=" --enable-decoders --enable-encoders --enable-demuxers --enable-muxers"
-else
-    # usally for project, output format is known
-    ARGS+=" --enable-decoders --enable-demuxers --disable-encoders --disable-muxers"
-    ARGS+=" --enable-encoder=aac,libfdk_aac,alac,libmp3lame,libvorbis,flac,libopencore_amrnb,libopencore_amrwb" # audio
-    ARGS+=" --enable-encoder=libvpx_vp8,libvpx_vp9,libwebp,libx264,libx265,libopenh264,libkvazaar,mpeg4"        # video
-    [[ "$OSTYPE" == "darwin"* ]] && ARGS+=" --enable-encoder=h264_videotoolbox,hevc_videotoolbox"               # hw video
-    ARGS+=" --enable-encoder=ssa,ass"   # subtitle
-    ARGS+=" --enable-muxer=mov,mp3,mp4,flac,matroska,ogg,wav"   # muxer
-fi
-
 # external libraries
-ARGS+=" --disable-autodetect"   # manual control external libraries
-ARGS+=" --enable-version3"      # LGPL 3.0
 #ARGS+=" --enable-openssl"      # FIXME: always using system openssl
 ARGS+=" --enable-zlib"
 ARGS+=" --enable-bzlib"
 ARGS+=" --enable-lzma"
 ARGS+=" --enable-iconv"
-ARGS+=" --enable-sdl2"
-ARGS+=" --enable-libxml2"       # xml2 parser for dash demuxing
-ARGS+=" --enable-libsoxr"       # audio resampling
-ARGS+=" --enable-libopencore-amrnb"     # amrnb encoding
-ARGS+=" --enable-libopencore-amrwb"     # amrwb encoding
-ARGS+=" --enable-libmp3lame"    # mp3 encoding
-ARGS+=" --enable-libvpx"        # vp8 & vp9 encoding & decoding
-ARGS+=" --enable-libwebp"       # webp encoding
-ARGS+=" --enable-libvorbis"     # vorbis encoding & decoding, ffmpg has native one but experimental
-[ $BUILD_HUGE -eq 1 ] && ARGS+=" --enable-libtheora"     # enable if you need theora encoding
-[ $BUILD_HUGE -eq 1 ] && ARGS+=" --enable-libopus"       # opus encoding & decoding, ffmpeg has native one
-[ $BUILD_HUGE -eq 1 ] && ARGS+=" --enable-libopenjpeg"   # jpeg 2000 encoding & decoding, ffmpeg has native one
+# disable-autodetect must define after enable-iconv, or
+# it may break the build. it's ffmpeg configure's fault
+ARGS+=" --disable-autodetect"   # manual control external libraries
 
-#ARGS+=" --enable-libass"       # FIXME
-if [ $BUILD_GPL -eq 1 -o $BUILD_HUGE -eq 1 ]; then
-    ARGS+=" --enable-gpl"           # GPL 2.x & 3.0
-    ARGS+=" --enable-libx264"       # h264 encoding
-    ARGS+=" --enable-libx265"       # hevc encoding
-    [ $BUILD_HUGE -eq 1 ] && ARGS+=" --enable-libxvid"   # mpeg4 encoding, ffmpeg has native one
-    ARGS+=" --enable-frei0r"        # frei0r 
-fi
+if [ $BUILD_HUGE -eq 1 ]; then
+    ARGS+=" --enable-decoders --enable-encoders --enable-demuxers --enable-muxers"
+    ARGS+=" --enable-sdl2"
+    ARGS+=" --enable-libsoxr"       # audio resampling
+    ARGS+=" --enable-libopencore-amrnb"     # amrnb encoding
+    ARGS+=" --enable-libopencore-amrwb"     # amrwb encoding
+    ARGS+=" --enable-libmp3lame"    # mp3 encoding
+    ARGS+=" --enable-libvpx"        # vp8 & vp9 encoding & decoding
+    ARGS+=" --enable-libwebp"       # webp encoding
+    ARGS+=" --enable-libvorbis"     # vorbis encoding & decoding, ffmpg has native one but experimental
+    ARGS+=" --enable-libtheora"     # enable if you need theora encoding
+    ARGS+=" --enable-libopus"       # opus encoding & decoding, ffmpeg has native one
+    ARGS+=" --enable-libopenjpeg"   # jpeg 2000 encoding & decoding, ffmpeg has native one
 
-if [ $BUILD_GPL -eq 0 -o $BUILD_HUGE -eq 1 ]; then
-    ARGS+=" --enable-libopenh264"   # h264 encoding
-    # read kvazaar's README
-    [[ "$OSTYPE" == "msys" && $BUILD_SHARED -eq 0 ]] && ARGS+=" --extra-cflags=-DKVZ_STATIC_LIB"
-    ARGS+=" --enable-libkvazaar"    # hevc encoding
-fi
+    ARGS+=" --enable-libass"       # FIXME
+    if [ $BUILD_GPL -eq 1 ]; then
+        ARGS+=" --enable-gpl"           # GPL 2.x & 3.0
+        ARGS+=" --enable-version3"      # LGPL 3.0
+        ARGS+=" --enable-libx264"       # h264 encoding
+        ARGS+=" --enable-libx265"       # hevc encoding
+        ARGS+=" --enable-libxvid"       # mpeg4 encoding, ffmpeg has native one
+        ARGS+=" --enable-frei0r"        # frei0r 
+    fi
 
-# nonfree -> unredistributable
-if [ $BUILD_NONFREE -eq 1 ]; then
-    ARGS+=" --enable-nonfree"
-    ARGS+=" --enable-libfdk-aac"    # aac encoding
+    if [ $BUILD_GPL -eq 0 ]; then
+        ARGS+=" --enable-libopenh264"   # h264 encoding
+        # read kvazaar's README
+        [[ "$OSTYPE" == "msys" && $BUILD_SHARED -eq 0 ]] && ARGS+=" --extra-cflags=-DKVZ_STATIC_LIB"
+        ARGS+=" --enable-libkvazaar"    # hevc encoding
+    fi
+
+    # nonfree -> unredistributable
+    if [ $BUILD_NONFREE -eq 1 ]; then
+        ARGS+=" --enable-nonfree"
+        ARGS+=" --enable-libfdk-aac"    # aac encoding
+    fi
+else
+    ARGS+=" --disable-programs"
+    # usally for project, output format is known
+    #ARGS+=" --enable-decoders --enable-demuxers --disable-encoders --disable-muxers"
+    # only demuxers & decoders
+    ARGS+=" --enable-decoders --enable-demuxers --disable-encoders --disable-muxers"
+    #ARGS+=" --enable-encoder=aac,libfdk_aac,alac,libmp3lame,libvorbis,flac,libopencore_amrnb,libopencore_amrwb" # audio
+    #ARGS+=" --enable-encoder=libvpx_vp8,libvpx_vp9,libwebp,libx264,libx265,libopenh264,libkvazaar,mpeg4"        # video
+    [[ "$OSTYPE" == "darwin"* ]] && ARGS+=" --enable-encoder=h264_videotoolbox,hevc_videotoolbox"               # hw video
+    ARGS+=" --enable-encoder=ssa,ass"   # subtitle
+    #ARGS+=" --enable-muxer=mov,mp3,mp4,flac,matroska,ogg,wav"   # muxer
 fi
 
 # platform hw accel
@@ -110,5 +114,8 @@ info "ARGS: $ARGS"
 cmd="./configure $ARGS"
 info "ffmpeg: $cmd"
 eval $cmd || error "$cmd failed"
-$MAKE clean 
 $MAKE -j$NJOBS install || error "make install failed"
+
+# fix libavcodec.pc
+# it's ffmpeg configure's fault
+grep iconv $PKG_CONFIG_PATH/libavcodec.pc || sed -i 's/Libs:.*-llzma/& -liconv/' $PKG_CONFIG_PATH/libavcodec.pc

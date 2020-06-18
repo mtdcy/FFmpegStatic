@@ -94,9 +94,9 @@ if (XCODE)
         install (PROGRAMS frei0r.sh DESTINATION ${_DEST} RENAME frei0r)
     endif()
 
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION ${_DEST})
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION ${_DEST})
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION ${_DEST})
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION ${_DEST})
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION ${_DEST})
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION ${_DEST})
     file (GLOB _LICENSE "${FFMPEG_PREBUILTS}/ffmpeg-4.1/COPYING*")
     install (FILES ${_LICENSE} DESTINATION ${_DEST}/Resources)
     install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/VERSION DESTINATION ${_DEST}/Resources)
@@ -110,9 +110,9 @@ else()
     )
 
     # Install all things to ${CMAKE_INSTALL_PREFIX}
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION bin)
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION bin)
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION bin)
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION bin)
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION bin)
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION bin)
     install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 
     # Headers
