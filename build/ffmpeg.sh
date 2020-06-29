@@ -89,6 +89,7 @@ fi
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS frameworks for image&audio&video
     ARGS+=" --enable-coreimage"         # for avfilter
+    ARGS+=" --enable-audiotoolbox"
     ARGS+=" --enable-videotoolbox"
     ARGS+=" --enable-securetransport"   # TLS
     ARGS+=" --enable-opencl"
