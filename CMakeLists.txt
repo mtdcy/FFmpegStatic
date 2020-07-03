@@ -8,6 +8,7 @@ set (VERSION_MINOR  0)
 set (VERSION_BUILD  1)
 
 set (FFMPEG_PREBUILTS   ${CMAKE_CURRENT_SOURCE_DIR}/out)
+set (PKG_CONFIG_PATH_OLD    ENV{PKG_CONFIG_PATH})
 set (ENV{PKG_CONFIG_PATH} "${FFMPEG_PREBUILTS}/static/lib/pkgconfig")  # for pkg-config
 
 # project settings
@@ -40,7 +41,7 @@ set (FFMPEG_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/FFmpeg.h)
 add_library(${PROJECT_NAME} SHARED stub.cpp ${FFMPEG_HEADERS} ${PRIVATE_HEADERS})
 find_package (PkgConfig REQUIRED)
 foreach (LIB ${FFMPEG_LIBS})
-    pkg_check_modules (${LIB} REQUIRED ${LIB})
+    pkg_check_modules (${LIB} REQUIRED NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH ${LIB})
     #target_link_libraries (${PROJECT_NAME} ${${LIB}_STATIC_LIBRARIES})
     include_directories (${${LIB}_STATIC_INCLUDE_DIRS})
     list (APPEND EXTRA_LINK_FLAGS ${${LIB}_STATIC_LDFLAGS} ${${LIB}_STATIC_LDFLAGS_OTHER})
@@ -137,3 +138,6 @@ else()
     if (WIN32)
     endif()
 endif()
+
+# restore PKG_CONFIG_PATH
+set (ENV{PKG_CONFIG_PATH} ${PKG_CONFIG_PATH_OLD})
