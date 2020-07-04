@@ -31,9 +31,13 @@ ARGS+=" --enable-zlib"
 ARGS+=" --enable-bzlib"
 ARGS+=" --enable-lzma"
 ARGS+=" --enable-iconv"
+ARGS+=" --enable-ffmpeg"
+ARGS+=" --enable-ffprobe"
+ARGS+=" --enable-ffplay"
 # disable-autodetect must define after enable-iconv, or
 # it may break the build. it's ffmpeg configure's fault
 ARGS+=" --disable-autodetect"   # manual control external libraries
+ARGS+=" --extra-ldflags=-liconv"
 
 if [ $BUILD_HUGE -eq 1 ]; then
     ARGS+=" --enable-decoders --enable-encoders --enable-demuxers --enable-muxers"
@@ -72,7 +76,7 @@ if [ $BUILD_HUGE -eq 1 ]; then
         ARGS+=" --enable-libfdk-aac"    # aac encoding
     fi
 else
-    ARGS+=" --disable-programs"
+    #ARGS+=" --disable-programs"
     # usally for project, output format is known
     #ARGS+=" --enable-decoders --enable-demuxers --disable-encoders --disable-muxers"
     # only demuxers & decoders

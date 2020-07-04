@@ -111,8 +111,8 @@ else()
     )
 
     # Install all things to ${CMAKE_INSTALL_PREFIX}
-    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION bin)
-    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION bin)
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION bin)
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION bin)
     #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION bin)
     install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 
