@@ -80,7 +80,7 @@ else
     # usally for project, output format is known
     #ARGS+=" --enable-decoders --enable-demuxers --disable-encoders --disable-muxers"
     # only demuxers & decoders
-    ARGS+=" --enable-decoders --enable-demuxers --disable-encoders --disable-muxers"
+    ARGS+=" --enable-decoders --enable-demuxers --enable-encoders --enable-muxers"
     #ARGS+=" --enable-encoder=aac,libfdk_aac,alac,libmp3lame,libvorbis,flac,libopencore_amrnb,libopencore_amrwb" # audio
     #ARGS+=" --enable-encoder=libvpx_vp8,libvpx_vp9,libwebp,libx264,libx265,libopenh264,libkvazaar,mpeg4"        # video
     [[ "$OSTYPE" == "darwin"* ]] && ARGS+=" --enable-encoder=h264_videotoolbox,hevc_videotoolbox"               # hw video
