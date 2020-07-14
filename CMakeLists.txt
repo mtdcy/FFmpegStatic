@@ -7,9 +7,18 @@ set (VERSION_MAJOR  1)
 set (VERSION_MINOR  0)
 set (VERSION_BUILD  1)
 
-set (FFMPEG_PREBUILTS   ${CMAKE_CURRENT_SOURCE_DIR}/out)
+if (APPLE)
+    set (TGT    "darwin19")
+elseif (WIN32)
+    set (TGT    "msys")
+else()
+    set (TGT    "linux")
+endif()
+
+set (FFMPEG_PREBUILTS   ${CMAKE_CURRENT_SOURCE_DIR}/${TGT}/prebuilts)
+set (FFMPEG_SOURCES     ${CMAKE_CURRENT_SOURCE_DIR}/${TGT}/ffmpeg-4.1)
 set (PKG_CONFIG_PATH_OLD    ENV{PKG_CONFIG_PATH})
-set (ENV{PKG_CONFIG_PATH} "${FFMPEG_PREBUILTS}/static/lib/pkgconfig")  # for pkg-config
+set (ENV{PKG_CONFIG_PATH} "${FFMPEG_PREBUILTS}/lib/pkgconfig")  # for pkg-config
 
 # project settings
 if (APPLE)
@@ -28,22 +37,25 @@ set (CMAKE_INCLUDE_CURRENT_DIR ON)
 #set (FFMPEG_LIBS libavutil libavcodec libavformat libavfilter libswresample libswscale libavdevice libpostproc)
 set (FFMPEG_LIBS libavutil libavcodec libavformat)
 
-# headers
+# private headers
 foreach (LIB ${FFMPEG_LIBS})
-    file (GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${FFMPEG_PREBUILTS}/static/include/${LIB}/*.h")
+    file (GLOB _HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/include/${LIB}/*.h")
     list (APPEND PRIVATE_HEADERS ${_HEADERS})
-    set (HAS_${LIB}     TRUE)
+    set (HAS_${LIB} TRUE)
 endforeach()
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FFmpeg.h.in FFmpeg.h)
-set (FFMPEG_HEADERS ${CMAKE_CURRENT_BINARY_DIR}/FFmpeg.h)
+
+# public headers
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/FFmpeg.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/FFmpeg.h)
+set (FFMPEG_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/FFmpeg.h)
 
 # our target 
 add_library(${PROJECT_NAME} SHARED stub.cpp ${FFMPEG_HEADERS} ${PRIVATE_HEADERS})
+include_directories (${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 find_package (PkgConfig REQUIRED)
 foreach (LIB ${FFMPEG_LIBS})
     pkg_check_modules (${LIB} REQUIRED NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH ${LIB})
     #target_link_libraries (${PROJECT_NAME} ${${LIB}_STATIC_LIBRARIES})
-    include_directories (${${LIB}_STATIC_INCLUDE_DIRS})
     list (APPEND EXTRA_LINK_FLAGS ${${LIB}_STATIC_LDFLAGS} ${${LIB}_STATIC_LDFLAGS_OTHER})
 endforeach()
 
@@ -63,7 +75,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "${EXTRA_LINK_FLAGS}
 if (XCODE)
     # libraries headers
     foreach (LIB ${FFMPEG_LIBS})
-        file (GLOB _HEADERS "${FFMPEG_PREBUILTS}/static/include/${LIB}/*.h")
+        file (GLOB _HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/${LIB}/*.h")
         set_property(SOURCE ${_HEADERS} PROPERTY MACOSX_PACKAGE_LOCATION Headers/${LIB})
     endforeach()
 
@@ -85,8 +97,8 @@ if (XCODE)
 
     # ugly install code
     set (_DEST ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.framework)
-    if (EXISTS ${FFMPEG_PREBUILTS}/static/lib/frei0r-1)
-        file (GLOB frei0r "${FFMPEG_PREBUILTS}/static/lib/frei0r-1/*")
+    if (EXISTS ${FFMPEG_PREBUILTS}/lib/frei0r-1)
+        file (GLOB frei0r "${FFMPEG_PREBUILTS}/lib/frei0r-1/*")
         install(DIRECTORY DESTINATION ${_DEST}/Resources/frei0r-1)
         foreach (so ${frei0r})
             get_filename_component(_so ${so} NAME_WE)
@@ -95,15 +107,15 @@ if (XCODE)
         install (PROGRAMS frei0r.sh DESTINATION ${_DEST} RENAME frei0r)
     endif()
 
-    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION ${_DEST})
-    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION ${_DEST})
-    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION ${_DEST})
-    file (GLOB _LICENSE "${FFMPEG_PREBUILTS}/ffmpeg-4.1/COPYING*")
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffmpeg DESTINATION ${_DEST})
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffprobe DESTINATION ${_DEST})
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffplay DESTINATION ${_DEST})
+    file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
     install (FILES ${_LICENSE} DESTINATION ${_DEST}/Resources)
-    install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/VERSION DESTINATION ${_DEST}/Resources)
-    install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/RELEASE DESTINATION ${_DEST}/Resources)
-    install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/RELEASE_NOTES DESTINATION ${_DEST}/Resources)
-    install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/Changelog DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION ${_DEST}/Resources)
+    install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION ${_DEST}/Resources)
 else()
     set_target_properties(${PROJECT_NAME} PROPERTIES
         SOVERSION       "${VERSION_MAJOR}.${VERSION_MINOR}"
@@ -111,29 +123,29 @@ else()
     )
 
     # Install all things to ${CMAKE_INSTALL_PREFIX}
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffmpeg DESTINATION bin)
-    install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffprobe DESTINATION bin)
-    #install (PROGRAMS ${FFMPEG_PREBUILTS}/static/bin/ffplay DESTINATION bin)
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffmpeg DESTINATION bin)
+    install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffprobe DESTINATION bin)
+    #install (PROGRAMS ${FFMPEG_PREBUILTS}/bin/ffplay DESTINATION bin)
     install (TARGETS ${PROJECT_NAME} DESTINATION lib)
 
     # Headers
     install (FILES ${FFMPEG_HEADERS} DESTINATION include)
     foreach (LIB ${FFMPEG_LIBS})
-        install(DIRECTORY ${FFMPEG_PREBUILTS}/static/include/${LIB} DESTINATION include)
+        install(DIRECTORY include/${LIB} DESTINATION include)
     endforeach()
 
     # Resources 
-    if (EXISTS ${FFMPEG_PREBUILTS}/static/lib/frei0r-1)
-        install (DIRECTORY ${FFMPEG_PREBUILTS}/static/lib/frei0r-1 DESTINATION bin)
+    if (EXISTS ${FFMPEG_PREBUILTS}/lib/frei0r-1)
+        install (DIRECTORY ${FFMPEG_PREBUILTS}/lib/frei0r-1 DESTINATION bin)
         install (PROGRAMS frei0r.sh DESTINATION bin RENAME frei0r)
     endif()
 
-    file (GLOB _LICENSE "${FFMPEG_PREBUILTS}/ffmpeg-4.1/COPYING*")
+    file (GLOB _LICENSE "${FFMPEG_SOURCES}/COPYING*")
     install (FILES ${_LICENSE} DESTINATION share/${PROJECT_NAME})
-    install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/VERSION DESTINATION share/${PROJECT_NAME})
-    install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/RELEASE DESTINATION share/${PROJECT_NAME})
-    install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/RELEASE_NOTES DESTINATION share/${PROJECT_NAME})
-    install (FILES ${FFMPEG_PREBUILTS}/ffmpeg-4.1/Changelog DESTINATION share/${PROJECT_NAME})
+    install (FILES ${FFMPEG_SOURCES}/VERSION DESTINATION share/${PROJECT_NAME})
+    install (FILES ${FFMPEG_SOURCES}/RELEASE DESTINATION share/${PROJECT_NAME})
+    install (FILES ${FFMPEG_SOURCES}/RELEASE_NOTES DESTINATION share/${PROJECT_NAME})
+    install (FILES ${FFMPEG_SOURCES}/Changelog DESTINATION share/${PROJECT_NAME})
 
     if (WIN32)
     endif()

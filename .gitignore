@@ -1,4 +1,7 @@
-out/
+darwin*/
+msys/
+linux/
+include/
 xcode/
 *.swp
 .DS_Store
